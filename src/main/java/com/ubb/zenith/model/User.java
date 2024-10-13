@@ -1,5 +1,6 @@
 package com.ubb.zenith.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -20,6 +21,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class User {
 
     @Id
+    @NotNull
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
@@ -31,6 +33,7 @@ public class User {
     @Email(message = "Invalid email format")
     private String email;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "Password cannot be empty")
     @Size(min = 8, message = "Password must have at least 8 characters")
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
