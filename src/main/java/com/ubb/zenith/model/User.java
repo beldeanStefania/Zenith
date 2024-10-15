@@ -44,6 +44,7 @@ public class User {
     private Integer age;
 
 
+
    //de revenit cu lista de playlist-uri salvate
 
 }
