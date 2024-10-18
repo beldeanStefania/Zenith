@@ -34,6 +34,9 @@ public class UserService {
     public User buildUser(final UserDTO userDTO) {
         var user = new User();
         user.setUsername(userDTO.getUsername());
+        user.setPassword(userDTO.getPassword());
+        user.setEmail(userDTO.getEmail());
+        user.setAge(userDTO.getAge());
         return user;
     }
 
@@ -42,7 +45,7 @@ public class UserService {
     }
 
     public User update(final String oldUsername, final UserDTO userDTO) throws UserNotFoundException {
-        return updateUsername(findUser(oldUsername), userDTO.getUsername());
+        return updateUsername(findUser(oldUsername), userDTO);
     }
 
     public User findUser(final String username) throws UserNotFoundException {
@@ -51,8 +54,11 @@ public class UserService {
         return modifiedUser;
     }
 
-    public User updateUsername(final User user, final String newUsername) {
-        user.setUsername(newUsername);
+    public User updateUsername(final User user, final UserDTO userDTO) {
+        user.setUsername(userDTO.getUsername());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        user.setAge(userDTO.getAge());
         return userRepository.save(user);
     }
 
