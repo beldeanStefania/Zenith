@@ -25,6 +25,7 @@ public class MoodService {
         return moodRepository.save(buildMood(mood)); }
 
     public Mood buildMood(MoodDTO moodDTO) {
+        //functie care construieste un obiect de tip Mood
         var mood = new Mood();
         mood.setEnergy_score(moodDTO.getEnergy_score());
         mood.setSadness_score(moodDTO.getSadness_score());

@@ -39,6 +39,7 @@ public class SongService {
     public Song addSong(final SongDTO song) throws UserNotFoundException {return songRepository.save(BuildSong(song)); }
 
     public Song BuildSong(SongDTO songDTO) throws UserNotFoundException {
+        //functie care construieste un obiect de tip Song
         var song = new Song();
         song.setArtist(songDTO.getArtist());
         song.setTitle(songDTO.getTitle());

@@ -8,6 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class MoodDTO {
+    //dto pentru Mood
 
     private Integer happiness_score;
 

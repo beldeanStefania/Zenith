@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class SongDTO {
-
+    //dto pentru Song
     private String title;
 
     private String artist;
