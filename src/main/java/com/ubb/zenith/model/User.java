@@ -21,7 +21,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class User {
 
     @Id
-    @NotNull
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
@@ -30,7 +29,6 @@ public class User {
     private String username;
 
     @NotBlank(message = "Email cannot be empty")
-    @Email(message = "Invalid email format")
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
