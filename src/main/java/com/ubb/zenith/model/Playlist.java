@@ -31,4 +31,5 @@ public class Playlist {
     @NotBlank(message = "Playlist name cannot be empty")
     @Size(min = 3, max = 20, message = "Playlist name must be between 3 and 20 characters")
     private String name;
+
 }

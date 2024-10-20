@@ -4,7 +4,9 @@ import com.ubb.zenith.dto.PlaylistDTO;
 import com.ubb.zenith.exception.PlaylistAlreadyExistsException;
 import com.ubb.zenith.exception.PlaylistNotFoundException;
 import com.ubb.zenith.model.Playlist;
+import com.ubb.zenith.model.Song;
 import com.ubb.zenith.repository.PlaylistRepository;
+import com.ubb.zenith.repository.SongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -14,6 +16,9 @@ import java.util.List;
 public class PlaylistService {
     @Autowired
     private PlaylistRepository playlistRepository;
+
+    @Autowired
+    private SongRepository songRepository;
 
     /**
      * Preia toate playlist-urile din repository.
@@ -54,10 +59,12 @@ public class PlaylistService {
      * @param playlistDTO obiect DTO care conține informațiile pentru construirea playlist-ului.
      * @return un obiect Playlist construit.
      */
+
     public Playlist buildPlaylist(final PlaylistDTO playlistDTO) {
         var playlist = new Playlist();
         playlist.setName(playlistDTO.getName());
-        playlist.setSongs(playlistDTO.getSongs());
+        playlist.setSongs(songRepository.findAll().stream()
+                .filter(song -> song.getId().equals(playlistDTO.getId_song())).toList());
         return playlist;
     }
 
@@ -92,7 +99,8 @@ public class PlaylistService {
      */
     public Playlist updateName(final Playlist playlist, final PlaylistDTO playlistDTO) {
         playlist.setName(playlistDTO.getName());
-        playlist.setSongs(playlistDTO.getSongs());
+        playlist.setSongs(songRepository.findAll().stream()
+                .filter(song -> song.getId().equals(playlistDTO.getId_song())).toList());
         return playlistRepository.save(playlist);
     }
 
