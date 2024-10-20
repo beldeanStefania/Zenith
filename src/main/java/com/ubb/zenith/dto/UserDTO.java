@@ -7,5 +7,4 @@ import lombok.Setter;
 @Getter
 public class UserDTO {
     private String username;
-    private Integer id_song;
 }
