@@ -14,6 +14,7 @@ import java.util.List;
 
 @Service
 public class PlaylistService {
+
     @Autowired
     private PlaylistRepository playlistRepository;
 
@@ -30,9 +31,9 @@ public class PlaylistService {
     }
 
     /**
-     * Adds a new playlist, first checking if a playlist with the same name already exists.
+     * Adds a new playlist after verifying if a playlist with the same name already exists.
      *
-     * @param playlistDTO the DTO object containing the playlist information to be added.
+     * @param playlistDTO DTO object that contains the information of the playlist to be added.
      * @return the added playlist.
      * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
      */
@@ -42,7 +43,7 @@ public class PlaylistService {
     }
 
     /**
-     * Checks if a playlist with a given name already exists in the repository.
+     * Checks if a playlist with a specific name exists in the repository.
      *
      * @param name the name of the playlist to be checked.
      * @throws PlaylistAlreadyExistsException if the playlist already exists.
@@ -56,8 +57,8 @@ public class PlaylistService {
     /**
      * Builds a Playlist object from a PlaylistDTO.
      *
-     * @param playlistDTO the DTO object containing the information for building the playlist.
-     * @return a constructed Playlist object.
+     * @param playlistDTO DTO object that contains the information to build the playlist.
+     * @return a built Playlist object.
      */
     public Playlist buildPlaylist(final PlaylistDTO playlistDTO) {
         var playlist = new Playlist();
@@ -71,7 +72,7 @@ public class PlaylistService {
      * Adds a playlist to the repository.
      *
      * @param playlist the Playlist object to be added.
-     * @return the playlist saved in the repository.
+     * @return the saved playlist in the repository.
      */
     public Playlist add(Playlist playlist) {
         return playlistRepository.save(playlist);
@@ -81,7 +82,7 @@ public class PlaylistService {
      * Updates an existing playlist based on the old name and the new information from PlaylistDTO.
      *
      * @param oldName the old name of the playlist to be updated.
-     * @param playlistDTO the DTO object with the new playlist information.
+     * @param playlistDTO DTO object with the new information of the playlist.
      * @return the updated playlist.
      * @throws PlaylistNotFoundException if no playlist with the specified name is found.
      */
@@ -93,7 +94,7 @@ public class PlaylistService {
      * Updates the name and songs of an existing playlist.
      *
      * @param playlist the Playlist object to be updated.
-     * @param playlistDTO the DTO object with the new playlist information.
+     * @param playlistDTO DTO object with the new information of the playlist.
      * @return the updated playlist.
      */
     public Playlist updateName(final Playlist playlist, final PlaylistDTO playlistDTO) {
@@ -106,7 +107,7 @@ public class PlaylistService {
     /**
      * Finds a playlist by name.
      *
-     * @param name the name of the playlist to search for.
+     * @param name the name of the playlist to be searched.
      * @return the found playlist.
      * @throws PlaylistNotFoundException if no playlist with the specified name is found.
      */
@@ -119,9 +120,9 @@ public class PlaylistService {
     /**
      * Adds a song to an existing playlist.
      *
-     * @param name the name of the playlist to add the song to.
+     * @param name the name of the playlist.
      * @param id_song the ID of the song to be added.
-     * @throws PlaylistNotFoundException if no playlist with the specified name is found.
+     * @throws PlaylistNotFoundException if the playlist is not found.
      */
     public void addSongToPlaylist(final String name, final Integer id_song) throws PlaylistNotFoundException {
         Playlist playlist = findPlaylist(name);
@@ -131,9 +132,9 @@ public class PlaylistService {
     }
 
     /**
-     * Deletes an existing playlist based on its name.
+     * Deletes an existing playlist based on the name.
      *
-     * @param name the name of the playlist to delete.
+     * @param name the name of the playlist to be deleted.
      * @throws PlaylistNotFoundException if no playlist with the specified name is found.
      */
     public void delete(final String name) throws PlaylistNotFoundException {
