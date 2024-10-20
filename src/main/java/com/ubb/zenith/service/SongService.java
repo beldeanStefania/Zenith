@@ -32,7 +32,7 @@ public class SongService {
      * Checks if a song is already added to the list and throws an error if it exists.
      * @param title
      * @param artist
-     * @throws SongAlreadyExistsException
+     * @throws SongAlreadyExistsException if the song already exists
      */
     public void checkIfSongAlreadyExists(final String title, final String artist) throws SongAlreadyExistsException {
         if (songRepository.findByArtistAndTitle(artist, title).isPresent()) {
@@ -44,9 +44,9 @@ public class SongService {
      * After ensuring that the song does not already exist, it calls the add function.
      * @param songDTO
      * @return calls the addSong function to add it to the repository.
-     * @throws SongAlreadyExistsException
-     * @throws SongNotFoundException
-     * @throws MoodNotFoundException
+     * @throws SongAlreadyExistsException if the song already exists
+     * @throws SongNotFoundException if the song is not found
+     * @throws MoodNotFoundException if the mood is not found
      */
     public Song add(final SongDTO songDTO) throws SongAlreadyExistsException, SongNotFoundException, MoodNotFoundException {
         checkIfSongAlreadyExists(songDTO.getTitle(), songDTO.getArtist());
@@ -57,8 +57,8 @@ public class SongService {
      * Saves the new song entity created in the buildSong function to the repository.
      * @param song
      * @return the new entity
-     * @throws SongNotFoundException
-     * @throws MoodNotFoundException
+     * @throws SongNotFoundException if the song is not found
+     * @throws MoodNotFoundException if the mood is not found
      */
     public Song addSong(final SongDTO song) throws MoodNotFoundException {
         return songRepository.save(BuildSong(song));
@@ -69,7 +69,7 @@ public class SongService {
      * If the mood exists, the new song is added to the mood's list.
      * @param songDTO
      * @return the created song
-     * @throws MoodNotFoundException
+     * @throws MoodNotFoundException when we try to add a song to a mood that does not exist
      */
     public Song BuildSong(SongDTO songDTO) throws MoodNotFoundException {
         var song = new Song();
@@ -105,7 +105,7 @@ public class SongService {
      * Deletes the song using the provided parameters.
      * @param artist
      * @param title
-     * @throws SongNotFoundException
+     * @throws SongNotFoundException if the song is not found
      */
     public void deleteSong(final String artist, final String title) throws SongNotFoundException {
         songRepository.delete(findSong(artist, title));
@@ -133,7 +133,7 @@ public class SongService {
      * @param artist
      * @param title
      * @return the song with the desired artist and title
-     * @throws SongNotFoundException
+     * @throws SongNotFoundException if the song is not found
      */
     public Song findSong(final String artist, final String title) throws SongNotFoundException {
         return songRepository.findAll().stream()
@@ -145,7 +145,7 @@ public class SongService {
      * This time, the search is done using the mood parameter.
      * @param mood
      * @return the song with the desired mood
-     * @throws SongNotFoundException
+     * @throws SongNotFoundException   if the song is not found
      */
     public Song findSongsByMood(final Mood mood) throws SongNotFoundException {
         return songRepository.findAll().stream()
