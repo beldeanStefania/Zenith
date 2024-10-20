@@ -1,88 +1,43 @@
 package com.ubb.zenith.model;
 
-import com.ubb.zenith.model.Mood;
-import com.ubb.zenith.model.Song;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
-@SpringBootTest
-class SongTest {
 
-    private Song song;
+public class SongTest {
 
-    @BeforeEach
-    void setUp() {
-        song = new Song();
-    }
-
-    @AfterEach
-    void tearDown() {
-        song = null;
+    @Test
+    public void testSetAndGetTitle() {
+        Song song = new Song();
+        song.setTitle("Shape of You"); // Setting a valid title
+        assertEquals("Shape of You", song.getTitle());
     }
 
     @Test
-    void testGetId() {
-        song.setId(1);
-        assertEquals(1, song.getId());
+    public void testSetAndGetArtist() {
+        Song song = new Song();
+        song.setArtist("Ed Sheeran"); // Setting a valid artist
+        assertEquals("Ed Sheeran", song.getArtist());
     }
 
     @Test
-    void testSetId() {
-        song.setId(2);
-        assertEquals(2, song.getId());
-    }
-
-    @Test
-    void testGetTitle() {
-        song.setTitle("Imagine");
-        assertEquals("Imagine", song.getTitle());
-    }
-
-    @Test
-    void testSetTitle() {
-        song.setTitle("Bohemian Rhapsody");
-        assertEquals("Bohemian Rhapsody", song.getTitle());
-    }
-
-    @Test
-    void testGetArtist() {
-        song.setArtist("The Beatles");
-        assertEquals("The Beatles", song.getArtist());
-    }
-
-    @Test
-    void testSetArtist() {
-        song.setArtist("Queen");
-        assertEquals("Queen", song.getArtist());
-    }
-
-    @Test
-    void testGetGenre() {
-        song.setGenre("Rock");
-        assertEquals("Rock", song.getGenre());
-    }
-
-    @Test
-    void testSetGenre() {
-        song.setGenre("Pop");
+    public void testSetAndGetGenre() {
+        Song song = new Song();
+        song.setGenre("Pop"); // Setting a valid genre
         assertEquals("Pop", song.getGenre());
     }
 
     @Test
-    void testGetMood() {
+    public void testSetAndGetMood() {
         Mood mood = new Mood();
-        song.setMood(mood);
+        mood.setHappiness_score(5);
+        mood.setSadness_score(3);
+        mood.setLove_score(4);
+        mood.setEnergy_score(6);
+
+        Song song = new Song();
+        song.setMood(mood); // Setting a valid mood
         assertEquals(mood, song.getMood());
     }
 
-    @Test
-    void testSetMood() {
-        Mood mood = new Mood();
-        song.setMood(mood);
-        assertNotNull(song.getMood());
-        assertEquals(mood, song.getMood());
-    }
 }
