@@ -1,7 +1,7 @@
 package com.ubb.zenith.service;
 
 import com.ubb.zenith.dto.MoodDTO;
-import com.ubb.zenith.exception.MoodAlreadyExistsExcetion;
+import com.ubb.zenith.exception.MoodAlreadyExistsException;
 import com.ubb.zenith.exception.MoodNotFoundException;
 import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.Mood;
@@ -28,11 +28,11 @@ public class MoodService {
     /**
      * Checks if the mood already exists, and if it does, throws an exception.
      * @param moodDTO
-     * @throws MoodAlreadyExistsExcetion if the mood already exists
+     * @throws MoodAlreadyExistsException if the mood already exists
      */
-    public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsExcetion {
+    public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
         if (FindByHappiness_scoreSadness_scoreLove_scoreEnergy_Score(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
-            throw new MoodAlreadyExistsExcetion("Mood already exists");
+            throw new MoodAlreadyExistsException("Mood already exists");
         }
     }
 
@@ -40,9 +40,9 @@ public class MoodService {
      * Checks if the mood exists, and if not, saves the created mood in the build method.
      * @param mood
      * @return the new mood after it is saved in the build method if it does not exist
-     * @throws MoodAlreadyExistsExcetion if the mood already exists
+     * @throws MoodAlreadyExistsException if the mood already exists
      */
-    public Mood add(final MoodDTO mood) throws MoodAlreadyExistsExcetion {
+    public Mood add(final MoodDTO mood) throws MoodAlreadyExistsException {
         checkIfMoodAlreadyExists(mood);
         return moodRepository.save(buildMood(mood));
     }
