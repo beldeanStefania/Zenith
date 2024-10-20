@@ -14,7 +14,6 @@ import java.util.List;
 
 @Service
 public class SongService {
-
     @Autowired
     private SongRepository songRepository;
 
@@ -22,51 +21,54 @@ public class SongService {
     private MoodRepository moodRepository;
 
     /**
-     * doar apeleaza repository sa faca rost de lista dorita
-     * @return o lista de cantece
+     * Simply calls the repository to get the desired list.
+     * @return a list of songs
      */
     public List<Song> getAll() {
         return songRepository.findAll();
     }
 
     /**
-     * verifica daca exista un cantesc deja adaugat in lista si arunca eroare daca exista
+     * Checks if a song is already added to the list and throws an error if it exists.
      * @param title
      * @param artist
      * @throws SongAlreadyExistsException
      */
-    public void checkIfSongAlreadyExists(final String title,final String artist) throws SongAlreadyExistsException {
-        if (songRepository.findByArtistAndTitle(artist,title).isPresent()) {
+    public void checkIfSongAlreadyExists(final String title, final String artist) throws SongAlreadyExistsException {
+        if (songRepository.findByArtistAndTitle(artist, title).isPresent()) {
             throw new SongAlreadyExistsException("Song already exists");
         }
     }
 
     /**
-     * dupa ce se asigura ca nu exista cantecul deja apeleaza functia de adaugare
+     * After ensuring that the song does not already exist, it calls the add function.
      * @param songDTO
-     * @return apeleaza functia addSong sa adauge in repo
+     * @return calls the addSong function to add it to the repository.
      * @throws SongAlreadyExistsException
      * @throws SongNotFoundException
      * @throws MoodNotFoundException
      */
-    public Song add(final SongDTO songDTO) throws SongAlreadyExistsException, SongNotFoundException,MoodNotFoundException {
-        checkIfSongAlreadyExists(songDTO.getTitle(),songDTO.getArtist());
+    public Song add(final SongDTO songDTO) throws SongAlreadyExistsException, SongNotFoundException, MoodNotFoundException {
+        checkIfSongAlreadyExists(songDTO.getTitle(), songDTO.getArtist());
         return addSong(songDTO);
     }
 
     /**
-     * salveaza in repo noua entitate song creata in functia buildSong
+     * Saves the new song entity created in the buildSong function to the repository.
      * @param song
-     * @return noua entitate
+     * @return the new entity
      * @throws SongNotFoundException
      * @throws MoodNotFoundException
      */
-    public Song addSong(final SongDTO song) throws MoodNotFoundException {return songRepository.save(BuildSong(song)); }
+    public Song addSong(final SongDTO song) throws MoodNotFoundException {
+        return songRepository.save(BuildSong(song));
+    }
 
     /**
-     * creaza un nou song ii atribuie valorile din DTO si creaza un mood default daca nu exista ,daca exista adauga in lista mood ului noul cantect creat
+     * Creates a new song, assigns it the values from the DTO, and creates a default mood if none exists.
+     * If the mood exists, the new song is added to the mood's list.
      * @param songDTO
-     * @return cantectul creat
+     * @return the created song
      * @throws MoodNotFoundException
      */
     public Song BuildSong(SongDTO songDTO) throws MoodNotFoundException {
@@ -77,7 +79,7 @@ public class SongService {
         Mood mood;
         if (songDTO.getMoodId() == null) {
             mood = new Mood();
-            mood.setHappiness_score(5);  // 5 este valoare default
+            mood.setHappiness_score(5);  // 5 is the default value
             mood.setSadness_score(5);
             mood.setLove_score(5);
             mood.setEnergy_score(5);
@@ -100,45 +102,55 @@ public class SongService {
     }
 
     /**
-     * sterge cantectul folosindu-se de parametrii prezentati
+     * Deletes the song using the provided parameters.
      * @param artist
      * @param title
      * @throws SongNotFoundException
      */
-    public void deleteSong(final String artist,final String title) throws SongNotFoundException { songRepository.delete(findSong(artist,title)); }
+    public void deleteSong(final String artist, final String title) throws SongNotFoundException {
+        songRepository.delete(findSong(artist, title));
+    }
 
     /**
-     * modifica un cantec cu noile campuri
+     * Updates a song with the new fields.
      * @param song
-     * @param newtittle
+     * @param newTitle
      * @param newArtist
      * @param newGenre
      * @param newMood
-     * @return
+     * @return  the updated song
      */
-    public Song updateSong(final Song song, final String newtittle,final String newArtist,final String newGenre,final Mood newMood) {
-        song.setArtist(newArtist); song.setTitle(newtittle); song.setGenre(newGenre); song.setMood(newMood);
-        return songRepository.save(song); }
+    public Song updateSong(final Song song, final String newTitle, final String newArtist, final String newGenre, final Mood newMood) {
+        song.setArtist(newArtist);
+        song.setTitle(newTitle);
+        song.setGenre(newGenre);
+        song.setMood(newMood);
+        return songRepository.save(song);
+    }
 
     /**
-     * cauta in lista de pe repo un cantesc folosindu-se de campurile artist si title
+     * Searches the repository list for a song using the artist and title fields.
      * @param artist
      * @param title
-     * @return
+     * @return the song with the desired artist and title
      * @throws SongNotFoundException
      */
-    public Song findSong(final String artist,final String title) throws SongNotFoundException { return songRepository.findAll().stream()
-            .filter(song -> song.getArtist().equals(artist) && song.getTitle().equals(title)).findFirst().orElseThrow(() -> new SongNotFoundException("Song not found")); }
+    public Song findSong(final String artist, final String title) throws SongNotFoundException {
+        return songRepository.findAll().stream()
+                .filter(song -> song.getArtist().equals(artist) && song.getTitle().equals(title))
+                .findFirst().orElseThrow(() -> new SongNotFoundException("Song not found"));
+    }
 
     /**
-     * se face o cautare de data asta folosindu-se de parametrul mood
+     * This time, the search is done using the mood parameter.
      * @param mood
-     * @return
+     * @return the song with the desired mood
      * @throws SongNotFoundException
      */
     public Song findSongsByMood(final Mood mood) throws SongNotFoundException {
         return songRepository.findAll().stream()
-                .filter(song -> song.getMood().equals(mood)).findFirst().orElseThrow(() -> new SongNotFoundException("Song not found"));
+                .filter(song -> song.getMood().equals(mood))
+                .findFirst().orElseThrow(() -> new SongNotFoundException("Song not found"));
     }
 
 }
