@@ -26,8 +26,15 @@ public class Song {
 
     private String genre;
 
+
     @ManyToOne
-    @JoinColumn(name = "mood_id", nullable = false)
+    @JoinColumn(name = "playlist_id")
+    @JsonBackReference
+    private Playlist playlist;
+
+
+    @ManyToOne
+    @JoinColumn(name = "mood_id")
     @JsonBackReference
     private Mood mood;
 }

@@ -1,10 +1,14 @@
 package com.ubb.zenith.controller;
 
+import com.ubb.zenith.dto.MoodDTO;
 import com.ubb.zenith.dto.UserDTO;
+import com.ubb.zenith.exception.MoodAlreadyExistsException;
+import com.ubb.zenith.exception.MoodNotFoundException;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
+import com.ubb.zenith.model.Mood;
 import com.ubb.zenith.model.User;
-import com.ubb.zenith.service.UserService;
+import com.ubb.zenith.service.MoodService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,42 +28,43 @@ import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/mood")
+public class MoodController {
 
     @Autowired
-    private UserService userService;
+    private MoodService moodService;
 
     @GetMapping("/getAll")
-    public List<User> getAll() {
-        return userService.getAll();
+    public List<Mood> getAll() {
+        return moodService.getAll();
     }
 
     @PostMapping("/add")
-    public ResponseEntity<User> add(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<Mood> add(@Valid @RequestBody MoodDTO moodDTO) {
         try {
-            return ok(userService.add(userDTO));
-        } catch (UserAlreadyExistsException e) {
+            return ok(moodService.add(moodDTO));
+        } catch (MoodAlreadyExistsException e) {
             return notFound().build();
         }
     }
 
-    @PutMapping("/update/{username}")
-    public ResponseEntity<User> update(@PathVariable String username, @RequestBody UserDTO userDTO) {
+    @PutMapping("/update/{moodId}")
+    public ResponseEntity<Mood> update(@PathVariable Integer moodId, @RequestBody MoodDTO moodDTO) {
         try {
-            return ok(userService.update(username, userDTO));
-        } catch (UserNotFoundException e) {
+            return ok(moodService.update(moodId, moodDTO));
+        } catch (MoodNotFoundException e) {
             return badRequest().build();
         }
     }
 
-    @DeleteMapping("/delete/{username}")
-    public ResponseEntity<User> delete(@PathVariable String username) {
+    @DeleteMapping("/delete/{moodId}")
+    public ResponseEntity<Mood> delete(@PathVariable Integer moodId) {
         try {
-            userService.delete(username);
+            moodService.delete(moodId);
             return ok().build();
-        } catch (UserNotFoundException e) {
+        } catch (MoodNotFoundException e) {
             return badRequest().build();
         }
     }
+
 }

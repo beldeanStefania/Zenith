@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface MoodRepository extends JpaRepository<Mood, Integer> {
 
+    Optional<Mood> findById(Integer moodId);
 }
