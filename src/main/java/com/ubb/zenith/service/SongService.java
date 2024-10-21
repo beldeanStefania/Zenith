@@ -101,30 +101,19 @@ public class SongService {
         return song;
     }
 
-    /**
-     * Deletes the song using the provided parameters.
-     * @param artist
-     * @param title
-     * @throws SongNotFoundException if the song is not found
-     */
-    public void deleteSong(final String artist, final String title) throws SongNotFoundException {
-        songRepository.delete(findSong(artist, title));
+
+    public void delete(Integer songId) throws SongNotFoundException {
+        Song song = songRepository.findById(songId).orElseThrow(() -> new SongNotFoundException("Song not found"));
+        songRepository.delete(song);
     }
 
-    /**
-     * Updates a song with the new fields.
-     * @param song
-     * @param newTitle
-     * @param newArtist
-     * @param newGenre
-     * @param newMood
-     * @return  the updated song
-     */
-    public Song updateSong(final Song song, final String newTitle, final String newArtist, final String newGenre, final Mood newMood) {
-        song.setArtist(newArtist);
-        song.setTitle(newTitle);
-        song.setGenre(newGenre);
-        song.setMood(newMood);
+
+    public Song update(final String title,final String artist, final SongDTO newSong) throws SongNotFoundException {
+        Song song = songRepository.findByArtistAndTitle(artist, title).orElseThrow(() -> new SongNotFoundException("Song not found"));
+        song.setArtist(newSong.getArtist());
+        song.setTitle(newSong.getTitle());
+        song.setGenre(newSong.getGenre());
+        song.setMood(moodRepository.findAll().get(newSong.getMoodId()));
         return songRepository.save(song);
     }
 

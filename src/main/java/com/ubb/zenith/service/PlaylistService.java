@@ -124,11 +124,11 @@ public class PlaylistService {
      * @param id_song the ID of the song to be added.
      * @throws PlaylistNotFoundException if the playlist is not found.
      */
-    public void addSongToPlaylist(final String name, final Integer id_song) throws PlaylistNotFoundException {
+    public Playlist addSongToPlaylist(final String name, final Integer id_song) throws PlaylistNotFoundException {
         Playlist playlist = findPlaylist(name);
         Song song = songRepository.findById(id_song).orElseThrow();
         playlist.getSongs().add(song);
-        playlistRepository.save(playlist);
+        return playlistRepository.save(playlist);
     }
 
     /**
