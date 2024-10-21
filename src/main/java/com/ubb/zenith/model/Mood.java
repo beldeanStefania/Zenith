@@ -28,20 +28,24 @@ public class Mood {
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
-    @NotBlank(message = "happy_score cannot be empty")
-    @Size(min = 1, max = 10, message = "happy_score must be between 1 and 10 characters")
+    @NotNull(message = "happiness_score cannot be null")
+    @Min(value = 1, message = "happiness_score must be at least 1")
+    @Max(value = 10, message = "happiness_score must be at most 10")
     private Integer happiness_score;
 
-    @NotBlank(message = "sadness_score cannot be empty")
-    @Size(min = 1, max = 10, message = "sadness_score must be between 1 and 10 characters")
+    @NotNull(message = "sadness_score cannot be null")
+    @Min(value = 1, message = "sadness_score must be at least 1")
+    @Max(value = 10, message = "sadness_score must be at most 10")
     private Integer sadness_score;
 
-    @NotBlank(message = "anger_score cannot be empty")
-    @Size(min = 1, max = 10, message = "anger_score must be between 1 and 10 characters")
+    @NotNull(message = "love_score cannot be null")
+    @Min(value = 1, message = "love_score must be at least 1")
+    @Max(value = 10, message = "love_score must be at most 10")
     private Integer love_score;
 
-    @NotBlank(message = "energy_score cannot be empty")
-    @Size(min = 1, max = 10, message = "energy_score must be between 1 and 10 characters")
+    @NotNull(message = "energy_score cannot be null")
+    @Min(value = 1, message = "energy_score must be at least 1")
+    @Max(value = 10, message = "energy_score must be at most 10")
     private Integer energy_score;
 
     @OneToMany(mappedBy = "mood", cascade = ALL)

@@ -1,4 +1,4 @@
-package com.ubb.zenith;
+package com.ubb.zenith.Service;
 
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;

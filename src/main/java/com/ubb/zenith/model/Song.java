@@ -2,7 +2,6 @@ package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
@@ -16,7 +15,6 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 public class Song {
 
     @Id
-    @NonNull
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
@@ -32,5 +30,4 @@ public class Song {
     @JoinColumn(name = "mood_id", nullable = false)
     @JsonBackReference
     private Mood mood;
-
 }
