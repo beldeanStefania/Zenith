@@ -3,6 +3,7 @@ package com.ubb.zenith.controller;
 import com.ubb.zenith.dto.SongDTO;
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.MoodNotFoundException;
+import com.ubb.zenith.exception.PlaylistNotFoundException;
 import com.ubb.zenith.exception.SongAlreadyExistsException;
 import com.ubb.zenith.exception.SongNotFoundException;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
@@ -44,8 +45,8 @@ public class SongController {
     @PostMapping("/add")
     public ResponseEntity<Song> add(@Valid @RequestBody SongDTO songDTO) {
         try {
-            return ok(songService.addSong(songDTO));
-        } catch (MoodNotFoundException e) {
+            return ok(songService.add(songDTO));
+        } catch (SongAlreadyExistsException | MoodNotFoundException e) {
             return notFound().build();
         }
     }
@@ -59,7 +60,7 @@ public class SongController {
         }
     }
 
-    @DeleteMapping("/delete/{username}")
+    @DeleteMapping("/delete/{songId}")
     public ResponseEntity<Song> delete(@PathVariable Integer songId) {
         try {
             songService.delete(songId);

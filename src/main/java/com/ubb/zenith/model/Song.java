@@ -1,6 +1,7 @@
 package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -29,7 +30,7 @@ public class Song {
 
     @ManyToOne
     @JoinColumn(name = "playlist_id")
-    @JsonBackReference
+    @JsonManagedReference
     private Playlist playlist;
 
 

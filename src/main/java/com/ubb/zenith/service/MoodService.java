@@ -30,9 +30,20 @@ public class MoodService {
      * @throws MoodAlreadyExistsException if the mood already exists
      */
     public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
-        if (FindByHappiness_scoreSadness_scoreLove_scoreEnergy_Score(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
+        if (MoodExists(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
             throw new MoodAlreadyExistsException("Mood already exists");
         }
+    }
+
+    public boolean MoodExists(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) {
+        List<Mood> mood = getAll();
+        if(mood.isEmpty())
+            return false;
+        for (int i = 0; i < mood.size(); i++) {
+            if (mood.get(i).getHappiness_score().equals(happiness_score) && mood.get(i).getSadness_score().equals(sadness_score) && mood.get(i).getLove_score().equals( love_score) && mood.get(i).getEnergy_score().equals(energy_score))
+                return true;
+        }
+        return false;
     }
 
     /**

@@ -40,7 +40,7 @@ public class MoodController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Mood> add(@Valid @RequestBody MoodDTO moodDTO) {
+    public ResponseEntity<Mood> add(@RequestBody MoodDTO moodDTO) {
         try {
             return ok(moodService.add(moodDTO));
         } catch (MoodAlreadyExistsException e) {
