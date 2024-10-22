@@ -112,19 +112,19 @@ public class SongService {
     }
 
     /**
-     * Updates a song with the new fields.
-     * @param song
-     * @param newTitle
-     * @param newArtist
-     * @param newGenre
-     * @param newMood
-     * @return  the updated song
+     *
+     * @param title
+     * @param artist
+     * @param newSong
+     * @return
+     * @throws SongNotFoundException
      */
-    public Song updateSong(final Song song, final String newTitle, final String newArtist, final String newGenre, final Mood newMood) {
-        song.setArtist(newArtist);
-        song.setTitle(newTitle);
-        song.setGenre(newGenre);
-        song.setMood(newMood);
+    public Song updateSong(final String title,final String artist, final SongDTO newSong) throws SongNotFoundException {
+        Song song = songRepository.findByArtistAndTitle(artist, title).orElseThrow(() -> new SongNotFoundException("Song not found"));
+        song.setArtist(newSong.getArtist());
+        song.setTitle(newSong.getTitle());
+        song.setGenre(newSong.getGenre());
+        song.setMood(moodRepository.findAll().get(newSong.getMoodId()));
         return songRepository.save(song);
     }
 
