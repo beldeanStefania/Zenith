@@ -10,10 +10,8 @@ import lombok.Setter;
 public class SongDTO {
     //dto pentru Song
     private String title;
-
     private String artist;
-
     private String genre;
-
     private Integer moodId;
+    //private Integer playlistId;
 }

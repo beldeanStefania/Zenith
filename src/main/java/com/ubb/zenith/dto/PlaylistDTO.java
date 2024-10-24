@@ -10,5 +10,5 @@ import java.util.List;
 @Getter
 public class PlaylistDTO {
     private String name;
-    private Integer id_song;
+    //private Integer id_song;
 }

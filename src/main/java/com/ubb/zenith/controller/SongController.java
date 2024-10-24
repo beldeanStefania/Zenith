@@ -1,10 +1,17 @@
 package com.ubb.zenith.controller;
 
+import com.ubb.zenith.dto.SongDTO;
 import com.ubb.zenith.dto.UserDTO;
+import com.ubb.zenith.exception.MoodNotFoundException;
+import com.ubb.zenith.exception.PlaylistNotFoundException;
+import com.ubb.zenith.exception.SongAlreadyExistsException;
+import com.ubb.zenith.exception.SongNotFoundException;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
+import com.ubb.zenith.model.Mood;
+import com.ubb.zenith.model.Song;
 import com.ubb.zenith.model.User;
-import com.ubb.zenith.service.UserService;
+import com.ubb.zenith.service.SongService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,42 +31,43 @@ import static org.springframework.http.ResponseEntity.notFound;
 import static org.springframework.http.ResponseEntity.ok;
 
 @RestController
-@RequestMapping("/api/user")
-public class UserController {
+@RequestMapping("/api/song")
+public class SongController {
 
     @Autowired
-    private UserService userService;
+    private SongService songService;
 
     @GetMapping("/getAll")
-    public List<User> getAll() {
-        return userService.getAll();
+    public List<Song> getAll() {
+        return songService.getAll();
     }
 
     @PostMapping("/add")
-    public ResponseEntity<User> add(@Valid @RequestBody UserDTO userDTO) {
+    public ResponseEntity<Song> add(@Valid @RequestBody SongDTO songDTO) {
         try {
-            return ok(userService.add(userDTO));
-        } catch (UserAlreadyExistsException e) {
+            return ok(songService.add(songDTO));
+        } catch (SongAlreadyExistsException | MoodNotFoundException e) {
             return notFound().build();
         }
     }
 
-    @PutMapping("/update/{username}")
-    public ResponseEntity<User> update(@PathVariable String username, @RequestBody UserDTO userDTO) {
+    @PutMapping("/update/{title}/{artist}")
+    public ResponseEntity<Song> update(@PathVariable String title, @PathVariable String artist, @RequestBody SongDTO songDTO) {
         try {
-            return ok(userService.update(username, userDTO));
-        } catch (UserNotFoundException e) {
+            return ok(songService.update(title, artist, songDTO));
+        } catch (SongNotFoundException e) {
             return badRequest().build();
         }
     }
 
-    @DeleteMapping("/delete/{username}")
-    public ResponseEntity<User> delete(@PathVariable String username) {
+    @DeleteMapping("/delete/{songId}")
+    public ResponseEntity<Song> delete(@PathVariable Integer songId) {
         try {
-            userService.delete(username);
+            songService.delete(songId);
             return ok().build();
-        } catch (UserNotFoundException e) {
+        } catch (SongNotFoundException e) {
             return badRequest().build();
         }
     }
+
 }

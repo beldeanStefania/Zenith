@@ -20,12 +20,12 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @AllArgsConstructor
 public class Playlist {
     @Id
-    @NonNull
+    //@NonNull
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
     @OneToMany(mappedBy = "playlist",cascade = ALL)
-    @JsonManagedReference
+    @JsonBackReference
     private List<Song> songs;
 
     @NotBlank(message = "Playlist name cannot be empty")

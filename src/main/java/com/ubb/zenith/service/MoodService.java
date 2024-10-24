@@ -3,7 +3,6 @@ package com.ubb.zenith.service;
 import com.ubb.zenith.dto.MoodDTO;
 import com.ubb.zenith.exception.MoodAlreadyExistsException;
 import com.ubb.zenith.exception.MoodNotFoundException;
-import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.Mood;
 import com.ubb.zenith.repository.MoodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,20 @@ public class MoodService {
      * @throws MoodAlreadyExistsException if the mood already exists
      */
     public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
-        if (FindByHappiness_scoreSadness_scoreLove_scoreEnergy_Score(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
+        if (MoodExists(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
             throw new MoodAlreadyExistsException("Mood already exists");
         }
+    }
+
+    public boolean MoodExists(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) {
+        List<Mood> mood = getAll();
+        if(mood.isEmpty())
+            return false;
+        for (int i = 0; i < mood.size(); i++) {
+            if (mood.get(i).getHappiness_score().equals(happiness_score) && mood.get(i).getSadness_score().equals(sadness_score) && mood.get(i).getLove_score().equals( love_score) && mood.get(i).getEnergy_score().equals(energy_score))
+                return true;
+        }
+        return false;
     }
 
     /**
@@ -72,47 +82,27 @@ public class MoodService {
         return moodRepository.save(mood);
     }
 
-    /**
-     * Deletes a mood using the provided parameters to find the desired entity.
-     * @param happiness_score
-     * @param love_score
-     * @param sadness_score
-     * @param energy_score
-     * @throws MoodNotFoundException if the mood is not found
-     */
-    public void deleteMood(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) throws MoodNotFoundException {
-        moodRepository.delete(findMood(happiness_score, love_score, sadness_score, energy_score));
+
+    public void delete(final Integer moodId) throws MoodNotFoundException {
+        moodRepository.delete(findMood(moodId));
     }
 
     /**
-     * Updates all fields of a mood.
-     * @param mood
-     * @param newhappiness_score
-     * @param newlove_score
-     * @param newsadness_score
-     * @param newenergy_score
+     * Updates a mood using the provided parameters to find the desired entity.
+     * @param moodId
      */
-    public void updateMood(final MoodDTO mood, final Integer newhappiness_score, final Integer newlove_score, final Integer newsadness_score, final Integer newenergy_score) {
-        mood.setHappiness_score(newhappiness_score);
-        mood.setLove_score(newlove_score);
-        mood.setSadness_score(newsadness_score);
-        mood.setEnergy_score(newenergy_score);
-        moodRepository.save(buildMood(mood));
+    public Mood update(final Integer moodId, final MoodDTO moodDTO) throws MoodNotFoundException {
+        Mood mood = moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
+        mood.setHappiness_score(moodDTO.getHappiness_score());
+        mood.setLove_score(moodDTO.getLove_score());
+        mood.setSadness_score(moodDTO.getSadness_score());
+        mood.setEnergy_score(moodDTO.getEnergy_score());
+        return moodRepository.save(mood);
     }
 
-    /**
-     * Finds a mood using the provided scores.
-     * @param happiness_score
-     * @param love_score
-     * @param sadness_score
-     * @param energy_score
-     * @return the mood after the wish filters are applied
-     * @throws MoodNotFoundException if the mood is not found
-     */
-    public Mood findMood(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) throws MoodNotFoundException {
-        return moodRepository.findAll().stream()
-                .filter(mood -> mood.getHappiness_score().equals(happiness_score) && mood.getLove_score().equals(love_score) && mood.getSadness_score().equals(sadness_score) && mood.getEnergy_score().equals(energy_score))
-                .findFirst().orElseThrow(() -> new MoodNotFoundException("Mood not found"));
+
+    public Mood findMood(final Integer moodId) throws MoodNotFoundException {
+        return moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
     }
 
     /**

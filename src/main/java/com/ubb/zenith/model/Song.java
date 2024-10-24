@@ -1,6 +1,7 @@
 package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -26,8 +27,15 @@ public class Song {
 
     private String genre;
 
+
     @ManyToOne
-    @JoinColumn(name = "mood_id", nullable = false)
+    @JoinColumn(name = "playlist_id")
+    @JsonManagedReference
+    private Playlist playlist;
+
+
+    @ManyToOne
+    @JoinColumn(name = "mood_id")
     @JsonBackReference
     private Mood mood;
 }
