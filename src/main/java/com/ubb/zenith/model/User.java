@@ -29,6 +29,7 @@ public class User {
     private String username;
 
     @NotBlank(message = "Email cannot be empty")
+    @Email(message = "Email should be valid")
     private String email;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

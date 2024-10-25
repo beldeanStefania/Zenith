@@ -30,4 +30,9 @@ public class Song {
     @JoinColumn(name = "mood_id", nullable = false)
     @JsonBackReference
     private Mood mood;
+
+    @ManyToOne
+    @JoinColumn(name = "playlist_id", nullable = false)
+    @JsonBackReference
+    private Playlist playlist;
 }

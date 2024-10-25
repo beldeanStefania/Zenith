@@ -19,9 +19,10 @@ class UserTest {
 
     @BeforeEach
     void setUp() {
+        try (ValidatorFactory factory = Validation.buildDefaultValidatorFactory()) {
+            validator = factory.getValidator();
+        }
         user = new User();
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = factory.getValidator();
     }
 
     @AfterEach
@@ -30,7 +31,7 @@ class UserTest {
     }
 
     @Test
-    void getId() {
+    void testIdSetterAndGetter() {
         user.setId(1);
         assertEquals(1, user.getId());
     }
@@ -42,47 +43,16 @@ class UserTest {
     }
 
     @Test
-    void setId() {
-        user.setId(2);
-        assertEquals(2, user.getId());
-    }
-
-    @Test
     void setUsername() {
         user.setUsername("JaneDoe");
         assertEquals("JaneDoe", user.getUsername());
     }
 
-    @Test
-    void testUsernameValidation() {
-        user.setUsername("");
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
-        user.setUsername("Jo");
-        violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
-        user.setUsername("ValidUser");
-        violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
-    }
 
     @Test
     void setEmail() {
         user.setEmail("test@example.com");
         assertEquals("test@example.com", user.getEmail());
-    }
-
-    @Test
-    void testEmailValidation() {
-        user.setEmail("");
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
-        user.setEmail("valid@example.com");
-        violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
     }
 
     @Test
@@ -92,34 +62,129 @@ class UserTest {
     }
 
     @Test
-    void testPasswordValidation() {
-        user.setPassword("");
-        Set<ConstraintViolation<User>> violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
-        user.setPassword("123");
-        violations = validator.validate(user);
-        assertFalse(violations.isEmpty());
-
-        user.setPassword("Valid123!");
-        violations = validator.validate(user);
-        assertTrue(violations.isEmpty());
-    }
-
-    @Test
     void setAge() {
         user.setAge(25);
         assertEquals(25, user.getAge());
     }
+    @Test
+    void testUsernameValidation() {
+        user.setUsername("");
+        user.setEmail("valid@example.com");
+        user.setPassword("Valid123!");
+        user.setAge(20);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test short username
+        user.setUsername("Jo");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test valid username
+        user.setUsername("ValidUsername");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertTrue(violations.isEmpty());
+    }
+
+//    @Test
+//    void testPasswordValidation() {
+//        user.setPassword("");
+//        Set<ConstraintViolation<User>> violations = validator.validate(user);
+//        assertFalse(violations.isEmpty());
+//
+//        user.setPassword("123");
+//        violations = validator.validate(user);
+//        assertFalse(violations.isEmpty());
+//
+//        user.setPassword("Valid123!");
+//        violations = validator.validate(user);
+//        assertTrue(violations.isEmpty());
+//    }
+
+    @Test
+    void testEmailValidation() {
+        // Test empty email
+        user.setUsername("ValidUsername");
+        user.setEmail("");
+        user.setPassword("Valid123!");
+        user.setAge(20);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test invalid email format
+        user.setEmail("invalid-email");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test valid email
+        user.setEmail("valid@example.com");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    void testPasswordValidation() {
+        // Test empty password
+        user.setUsername("ValidUsername");
+        user.setEmail("valid@example.com");
+        user.setPassword("");
+        user.setAge(20);
+        Set<ConstraintViolation<User>> violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test short password
+        user.setPassword("123");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test password without required characters
+        user.setPassword("password");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertFalse(violations.isEmpty());
+
+        // Test valid password
+        user.setPassword("Valid123!");
+        violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
+        assertTrue(violations.isEmpty());
+    }
 
     @Test
     void testAgeValidation() {
+        // Test age below minimum
+        user.setUsername("ValidUsername");
+        user.setEmail("valid@example.com");
+        user.setPassword("Valid123!");
         user.setAge(10);
         Set<ConstraintViolation<User>> violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
         assertFalse(violations.isEmpty());
 
+        // Test valid age
         user.setAge(20);
         violations = validator.validate(user);
+        violations.forEach(violation -> System.out.println(violation.getMessage()));
         assertTrue(violations.isEmpty());
     }
+
+
+//    @Test
+//    void testAgeValidation() {
+//        user.setAge(10);
+//        Set<ConstraintViolation<User>> violations = validator.validate(user);
+//        assertFalse(violations.isEmpty());
+//
+//        user.setAge(20);
+//        violations = validator.validate(user);
+//        assertTrue(violations.isEmpty());
+//    }
 }
