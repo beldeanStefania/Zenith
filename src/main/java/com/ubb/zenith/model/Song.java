@@ -27,12 +27,10 @@ public class Song {
 
     private String genre;
 
-
     @ManyToOne
     @JoinColumn(name = "playlist_id")
     @JsonManagedReference
     private Playlist playlist;
-
 
     @ManyToOne
     @JoinColumn(name = "mood_id")

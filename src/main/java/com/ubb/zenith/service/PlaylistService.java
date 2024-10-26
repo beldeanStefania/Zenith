@@ -71,7 +71,7 @@ public class PlaylistService {
     public Playlist buildPlaylist(final PlaylistDTO playlistDTO) {
         var playlist = new Playlist();
         playlist.setName(playlistDTO.getName());
-        playlist.setSongs(List.of());  // Initially, the playlist will have no songs
+        playlist.setSongs(List.of());
         return playlist;
     }
 
@@ -85,7 +85,7 @@ public class PlaylistService {
      */
     public Playlist update(final String oldName, final PlaylistDTO playlistDTO) throws PlaylistNotFoundException {
         Playlist playlist = findPlaylist(oldName);
-        playlist.setName(playlistDTO.getName());  // Only updating the name
+        playlist.setName(playlistDTO.getName());
         return playlistRepository.save(playlist);
     }
 
@@ -110,21 +110,27 @@ public class PlaylistService {
      * @throws SongNotFoundException if the song is not found.
      */
     public Playlist addSongToPlaylist(final String playlistName, final Integer songId) throws PlaylistNotFoundException, SongNotFoundException, SongAlreadyExistsException {
-        Playlist playlist = findPlaylist(playlistName);  // Find the playlist by name
+        Playlist playlist = findPlaylist(playlistName);
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new SongNotFoundException("Song not found"));
 
-        checkSongInPlaylist(song);  // Check if the song is already in the playlist
+        checkSongInPlaylist(song);
 
-        // Add song to playlist and set playlist in song (managing both sides of the relationship)
+
         playlist.getSongs().add(song);
-        song.setPlaylist(playlist);  // Set playlist to the song
+        song.setPlaylist(playlist);
 
-        // Save the song and playlist (Cascade will save both sides if set up)
+
         songRepository.save(song);
         return playlistRepository.save(playlist);
     }
 
+    /**
+     * Checks if a song is already present in any playlist.
+     *
+     * @param song the song to check for presence in a playlist.
+     * @throws SongAlreadyExistsException if the song is already associated with a playlist.
+     */
     public void checkSongInPlaylist(Song song) throws SongAlreadyExistsException {
         if(playlistRepository.findBySongs(song).isPresent()) {
             throw new SongAlreadyExistsException("Song already exists");
@@ -143,31 +149,45 @@ public class PlaylistService {
     }
 
 
-    // Generate a playlist based on user's mood scores
-    public Playlist generatePlaylistForUser(Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) {
+    /**
+     * Generates a playlist based on the user's mood scores.
+     *
+     * @param happinessScore the happiness score of the user.
+     * @param sadnessScore the sadness score of the user.
+     * @param loveScore the love score of the user.
+     * @param energyScore the energy score of the user.
+     * @param playlistName the name of the playlist to be generated.
+     * @return the generated playlist.
+     * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
+     */
+    public Playlist generatePlaylistForUser(Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException {
+        checkIfPlaylistAlreadyExists(playlistName);
         List<Mood> allMoods = moodRepository.findAll();
-
-        // Filter and collect songs based on matching moods
         List<Song> matchingSongs = allMoods.stream()
                 .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
                 .flatMap(mood -> mood.getSongs().stream())
                 .collect(Collectors.toList());
-
-        // Create a new playlist
         Playlist playlist = new Playlist();
         playlist.setName(playlistName);
 
-        // Set the playlist in each song
-        matchingSongs.forEach(song -> song.setPlaylist(playlist));  // Ensure each song knows it's part of this playlist
 
-        // Set songs in the playlist
+        matchingSongs.forEach(song -> song.setPlaylist(playlist));
+
         playlist.setSongs(matchingSongs);
 
-        // Save the playlist and songs (cascade should handle saving both)
         return playlistRepository.save(playlist);
     }
 
-    // method to determine if a song's mood matches the user's mood scores
+    /**
+     * Checks if a mood matches the user's mood scores.
+     *
+     * @param mood the mood to be checked.
+     * @param happinessScore the happiness score of the user.
+     * @param sadnessScore the sadness score of the user.
+     * @param loveScore the love score of the user.
+     * @param energyScore the energy score of the user.
+     * @return true if the mood matches the user's mood scores, false otherwise.
+     */
     private boolean isMoodMatch(Mood mood, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore) {
         // Define a threshold for matching (e.g., +/- 2 points)
         int threshold = 2;
@@ -176,5 +196,18 @@ public class PlaylistService {
                 && Math.abs(mood.getSadness_score() - sadnessScore) <= threshold
                 && Math.abs(mood.getLove_score() - loveScore) <= threshold
                 && Math.abs(mood.getEnergy_score() - energyScore) <= threshold;
+    }
+
+    /**
+     * Retrieves all songs from a playlist.
+     *
+     * @param playlistName the name of the playlist.
+     * @return a list of all songs in the playlist.
+     * @throws PlaylistNotFoundException if no playlist with the specified name is found.
+     */
+    public List<Song> getSongsFromPlaylist(String playlistName) throws PlaylistNotFoundException {
+        Playlist playlist = playlistRepository.findByName(playlistName)
+                .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
+        return playlist.getSongs();
     }
 }
