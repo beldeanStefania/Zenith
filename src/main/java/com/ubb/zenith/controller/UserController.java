@@ -30,11 +30,23 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    /**
+     * Retrieves all user entries from the repository.
+     *
+     * @return a list of all users in the database
+     */
     @GetMapping("/getAll")
     public List<User> getAll() {
         return userService.getAll();
     }
 
+    /**
+     * Adds a new user after verifying if a user with the same username already exists.
+     *
+     * @param userDTO DTO object that contains the information of the user to be added.
+     * @return the added user.
+     * @throws UserAlreadyExistsException if a user with the same username already exists.
+     */
     @PostMapping("/add")
     public ResponseEntity<User> add(@Valid @RequestBody UserDTO userDTO) {
         try {
@@ -44,6 +56,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Updates a user entry in the repository.
+     *
+     * @param username the username of the user to be updated.
+     * @param userDTO  DTO object that contains the information of the user to be updated.
+     * @return the updated user.
+     */
     @PutMapping("/update/{username}")
     public ResponseEntity<User> update(@PathVariable String username, @RequestBody UserDTO userDTO) {
         try {
@@ -53,6 +72,12 @@ public class UserController {
         }
     }
 
+    /**
+     * Deletes a user entry from the repository.
+     *
+     * @param username the username of the user to be deleted.
+     * @return the deleted user.
+     */
     @DeleteMapping("/delete/{username}")
     public ResponseEntity<User> delete(@PathVariable String username) {
         try {

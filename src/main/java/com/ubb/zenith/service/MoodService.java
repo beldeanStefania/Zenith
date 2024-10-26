@@ -17,16 +17,18 @@ public class MoodService {
     private MoodRepository moodRepository;
 
     /**
+     *Retrieves all mood entries from the repository.
      *
-     * @return a list of moods
+     * @return a list of all moods in the database
      */
     public List<Mood> getAll() {
         return moodRepository.findAll();
     }
 
     /**
-     * Checks if the mood already exists, and if it does, throws an exception.
-     * @param moodDTO
+     * Checks if the mood already exists base on its attributes
+     * If a mood with the same scores already exists, an exception is thrown.
+     * @param moodDTO the DTO containing mood attributes to check for existence.
      * @throws MoodAlreadyExistsException if the mood already exists
      */
     public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
@@ -35,6 +37,15 @@ public class MoodService {
         }
     }
 
+    /**
+     * Checks if a mood with the specified scores exists in the database.
+     *
+     * @param happiness_score the happiness score to check.
+     * @param love_score the love score to check.
+     * @param sadness_score the sadness score to check.
+     * @param energy_score the energy score to check.
+     * @return true if a mood with these scores exists, false otherwise.
+     */
     public boolean MoodExists(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) {
         List<Mood> mood = getAll();
         if(mood.isEmpty())
@@ -47,10 +58,11 @@ public class MoodService {
     }
 
     /**
-     * Checks if the mood exists, and if not, saves the created mood in the build method.
-     * @param mood
-     * @return the new mood after it is saved in the build method if it does not exist
-     * @throws MoodAlreadyExistsException if the mood already exists
+     * Adds a new mood to the database after verifying that it does not already exist.
+     *
+     * @param mood the MoodDTO containing the details of the mood to be added.
+     * @return the newly added Mood entity.
+     * @throws MoodAlreadyExistsException if a mood with the same scores already exists.
      */
     public Mood add(final MoodDTO mood) throws MoodAlreadyExistsException {
         checkIfMoodAlreadyExists(mood);
@@ -58,9 +70,10 @@ public class MoodService {
     }
 
     /**
-     * Creates a new mood with the attributes from the DTO and assigns an empty list of songs.
-     * @param moodDTO
-     * @return the new build mood
+     * Creates a new Mood entity from a MoodDTO.
+     *
+     * @param moodDTO the DTO containing mood attributes.
+     * @return a new Mood object populated with the provided attributes.
      */
     public Mood buildMood(MoodDTO moodDTO) {
         // Function that builds a Mood object
@@ -74,22 +87,33 @@ public class MoodService {
     }
 
     /**
-     * Saves a new mood.
-     * @param mood
-     * @return the new mood after it is saved
+     * Saves a new mood entity directly, without checking for existence.
+     *
+     * @param mood the Mood object to save.
+     * @return the saved Mood entity.
      */
     public Mood add(Mood mood) {
         return moodRepository.save(mood);
     }
 
 
+    /**
+     * Deletes a mood from the database based on its ID.
+     *
+     * @param moodId the ID of the mood to delete.
+     * @throws MoodNotFoundException if no mood with the specified ID exists.
+     */
     public void delete(final Integer moodId) throws MoodNotFoundException {
         moodRepository.delete(findMood(moodId));
     }
 
     /**
-     * Updates a mood using the provided parameters to find the desired entity.
-     * @param moodId
+     * Updates an existing mood in the database with new values from a MoodDTO.
+     *
+     * @param moodId the ID of the mood to update.
+     * @param moodDTO the DTO containing updated mood scores.
+     * @return the updated Mood entity.
+     * @throws MoodNotFoundException if no mood with the specified ID exists.
      */
     public Mood update(final Integer moodId, final MoodDTO moodDTO) throws MoodNotFoundException {
         Mood mood = moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
@@ -100,7 +124,12 @@ public class MoodService {
         return moodRepository.save(mood);
     }
 
-
+    /**
+     * Finds a mood by its id.
+     * @param moodId
+     * @return
+     * @throws MoodNotFoundException
+     */
     public Mood findMood(final Integer moodId) throws MoodNotFoundException {
         return moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
     }

@@ -7,6 +7,7 @@ import com.ubb.zenith.exception.PlaylistNotFoundException;
 import com.ubb.zenith.exception.SongAlreadyExistsException;
 import com.ubb.zenith.exception.SongNotFoundException;
 import com.ubb.zenith.model.Playlist;
+import com.ubb.zenith.model.Song;
 import com.ubb.zenith.service.PlaylistService;
 import com.ubb.zenith.service.SongService;
 import jakarta.validation.Valid;
@@ -34,15 +35,23 @@ public class PlaylistController {
     @Autowired
     private PlaylistService playlistService;
 
-    @Autowired
-    private SongService songService;
-
-
+    /**
+     * Retrieves all playlist entries from the repository.
+     *
+     * @return a list of all playlists in the database
+     */
     @GetMapping("/getAll")
     public List<Playlist> getAll() {
         return playlistService.getAll();
     }
 
+    /**
+     * Adds a new playlist after verifying if a playlist with the same name already exists.
+     *
+     * @param playlistDTO DTO object that contains the information of the playlist to be added.
+     * @return the added playlist.
+     * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
+     */
     @PostMapping("/add")
     public ResponseEntity<Playlist> add(@Valid @RequestBody PlaylistDTO playlistDTO) {
         try {
@@ -52,15 +61,16 @@ public class PlaylistController {
         }
     }
 
-//    @PostMapping("/addSongToPlaylist/{playlistName}/{songId}")
-//    public ResponseEntity<Playlist> addSong(@PathVariable String playlistName, @PathVariable Integer songId) {
-//        try {
-//            return ok(playlistService.addSongToPlaylist(playlistName, songId));
-//        } catch (PlaylistNotFoundException | SongNotFoundException e) {
-//            return notFound().build();
-//        }
-//    }
-
+    /**
+     * Adds a song to a playlist.
+     *
+     * @param playlistName the name of the playlist to add the song to.
+     * @param songId the ID of the song to be added.
+     * @return the updated playlist.
+     * @throws PlaylistNotFoundException if the playlist is not found.
+     * @throws SongNotFoundException if the song is not found.
+     * @throws SongAlreadyExistsException if the song is already in the playlist.
+     */
     @PostMapping("/addSongToPlaylist/{playlistName}/{songId}")
     public ResponseEntity<Playlist> addSong(@PathVariable String playlistName, @PathVariable Integer songId) {
         try {
@@ -73,18 +83,52 @@ public class PlaylistController {
         }
     }
 
+    /**
+     * Generates a playlist based on the mood scores provided.
+     *
+     * @param playlistName the name of the playlist to be generated.
+     * @param moodDTO the DTO object containing the mood scores.
+     * @return the generated playlist.
+     */
     @PostMapping("/generate/{playlistName}")
     public ResponseEntity<Playlist> generatePlaylist(@PathVariable String playlistName, @RequestBody MoodDTO moodDTO) {
-        Playlist playlist = playlistService.generatePlaylistForUser(
-                moodDTO.getHappiness_score(),
-                moodDTO.getSadness_score(),
-                moodDTO.getLove_score(),
-                moodDTO.getEnergy_score(),
-                playlistName  // Optional name for the generated playlist
-        );
-        return ResponseEntity.ok(playlist);
+        try {
+
+            Playlist playlist = playlistService.generatePlaylistForUser(
+                    moodDTO.getHappiness_score(),
+                    moodDTO.getSadness_score(),
+                    moodDTO.getLove_score(),
+                    moodDTO.getEnergy_score(),
+                    playlistName  // Optional name for the generated playlist
+            );
+            return ResponseEntity.ok(playlist);
+        } catch (PlaylistAlreadyExistsException e) {
+            return notFound().build();
+        }
     }
 
+    /**
+     * Retrieves all songs from a playlist.
+     *
+     * @param playlistName the name of the playlist to get the songs from.
+     * @return a list of all songs in the playlist.
+     */
+    @PostMapping("/getSongsFromPlaylist/{playlistName}")
+    public ResponseEntity<List<Song>> getSongsFromPlaylist(@PathVariable String playlistName) {
+        try {
+            return ok(playlistService.getSongsFromPlaylist(playlistName));
+        } catch (PlaylistNotFoundException e) {
+            return badRequest().build();
+        }
+    }
+
+    /**
+     * Updates a playlist entry in the repository.
+     *
+     * @param oldName the name of the playlist to be updated.
+     * @param playlistDTO the DTO object containing the new information of the playlist.
+     * @return the updated playlist.
+     */
     @PutMapping("/update/{oldName}")
     public ResponseEntity<Playlist> update(@PathVariable String oldName, @RequestBody PlaylistDTO playlistDTO) {
         try {
@@ -94,6 +138,12 @@ public class PlaylistController {
         }
     }
 
+    /**
+     * Deletes a playlist entry from the repository.
+     *
+     * @param name the name of the playlist to be deleted.
+     * @return the deleted playlist.
+     */
     @DeleteMapping("/delete/{name}")
     public ResponseEntity<Playlist> delete(@PathVariable String name) {
         try {

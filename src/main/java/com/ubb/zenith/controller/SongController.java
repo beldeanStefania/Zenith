@@ -1,16 +1,10 @@
 package com.ubb.zenith.controller;
 
 import com.ubb.zenith.dto.SongDTO;
-import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.MoodNotFoundException;
-import com.ubb.zenith.exception.PlaylistNotFoundException;
 import com.ubb.zenith.exception.SongAlreadyExistsException;
 import com.ubb.zenith.exception.SongNotFoundException;
-import com.ubb.zenith.exception.UserAlreadyExistsException;
-import com.ubb.zenith.exception.UserNotFoundException;
-import com.ubb.zenith.model.Mood;
 import com.ubb.zenith.model.Song;
-import com.ubb.zenith.model.User;
 import com.ubb.zenith.service.SongService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,11 +31,24 @@ public class SongController {
     @Autowired
     private SongService songService;
 
+    /**
+     * Retrieves all song entries from the repository.
+     *
+     * @return a list of all songs in the database
+     */
     @GetMapping("/getAll")
     public List<Song> getAll() {
         return songService.getAll();
     }
 
+    /**
+     * Adds a new song after verifying if a song with the same title and artist already exists.
+     *
+     * @param songDTO DTO object that contains the information of the song to be added.
+     * @return the added song.
+     * @throws SongAlreadyExistsException if a song with the same title and artist already exists.
+     * @throws MoodNotFoundException if the mood is not found.
+     */
     @PostMapping("/add")
     public ResponseEntity<Song> add(@Valid @RequestBody SongDTO songDTO) {
         try {
@@ -51,6 +58,14 @@ public class SongController {
         }
     }
 
+    /**
+     * Updates a song entry in the repository.
+     *
+     * @param title the title of the song to be updated.
+     * @param artist the artist of the song to be updated.
+     * @param songDTO DTO object that contains the information of the song to be updated.
+     * @return the updated song.
+     */
     @PutMapping("/update/{title}/{artist}")
     public ResponseEntity<Song> update(@PathVariable String title, @PathVariable String artist, @RequestBody SongDTO songDTO) {
         try {
@@ -60,6 +75,12 @@ public class SongController {
         }
     }
 
+    /**
+     * Deletes a song entry from the repository.
+     *
+     * @param songId the ID of the song to be deleted.
+     * @return the deleted song.
+     */
     @DeleteMapping("/delete/{songId}")
     public ResponseEntity<Song> delete(@PathVariable Integer songId) {
         try {
