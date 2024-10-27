@@ -29,4 +29,6 @@ public class Playlist {
     @Size(min = 3, max = 20, message = "Playlist name must be between 3 and 20 characters")
     private String name;
 
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPlaylist> userPlaylists;
 }

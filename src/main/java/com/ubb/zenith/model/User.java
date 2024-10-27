@@ -1,14 +1,14 @@
 package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
@@ -40,7 +40,8 @@ public class User {
     @Min(value = 12, message = "You must be at least 12 years old")
     private Integer age;
 
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserPlaylist> userPlaylists;
 
    //de revenit cu lista de playlist-uri salvate
 
