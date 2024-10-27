@@ -112,9 +112,12 @@ public class PlaylistService {
      * @throws PlaylistNotFoundException if no playlist with the specified name is found.
      */
     public Playlist findPlaylist(final String name) throws PlaylistNotFoundException {
-        var modifiedPlaylist = playlistRepository.findAll().stream()
-                .filter(playlist -> playlist.getName().equals(name)).findFirst().orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
-        return modifiedPlaylist;
+//        var modifiedPlaylist = playlistRepository.findAll().stream()
+//                .filter(playlist -> playlist.getName().equals(name)).findFirst().orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
+//        return modifiedPlaylist;
+        return (Playlist) playlistRepository.findByName(name)
+                .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
+
     }
 
     /**
