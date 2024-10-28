@@ -167,16 +167,24 @@ public class PlaylistService {
                 .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
                 .flatMap(mood -> mood.getSongs().stream())
                 .collect(Collectors.toList());
+
+        // Create the Playlist
         Playlist playlist = new Playlist();
         playlist.setName(playlistName);
-
-
-        matchingSongs.forEach(song -> song.setPlaylist(playlist));
-
         playlist.setSongs(matchingSongs);
 
-        return playlistRepository.save(playlist);
+        // Save the Playlist first
+        playlist = playlistRepository.save(playlist);
+
+        // Set the Playlist for each Song and save each Song individually
+        for (Song song : matchingSongs) {
+            song.setPlaylist(playlist);
+            songRepository.save(song); // This ensures the relationship is persisted
+        }
+
+        return playlist;
     }
+
 
     /**
      * Checks if a mood matches the user's mood scores.

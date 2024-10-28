@@ -25,6 +25,10 @@ public class Playlist {
     @JsonBackReference
     private List<Song> songs;
 
+    @OneToMany
+    @JsonBackReference
+    private List<UserPlaylist> userPlaylist;
+
     @NotBlank(message = "Playlist name cannot be empty")
     @Size(min = 3, max = 20, message = "Playlist name must be between 3 and 20 characters")
     private String name;
