@@ -1,11 +1,10 @@
-package com.ubb.zenith.Service;
+package com.ubb.zenith.service;
 
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.repository.UserRepository;
-import com.ubb.zenith.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

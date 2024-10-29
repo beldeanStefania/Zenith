@@ -3,154 +3,162 @@ package com.ubb.zenith.service;
 import com.ubb.zenith.dto.SongDTO;
 import com.ubb.zenith.exception.*;
 import com.ubb.zenith.model.Mood;
+import com.ubb.zenith.model.Playlist;
 import com.ubb.zenith.model.Song;
 import com.ubb.zenith.repository.MoodRepository;
+import com.ubb.zenith.repository.PlaylistRepository;
 import com.ubb.zenith.repository.SongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class SongService {
+
     @Autowired
     private SongRepository songRepository;
+
+    @Autowired
+    private PlaylistRepository playlistRepository;
 
     @Autowired
     private MoodRepository moodRepository;
 
     /**
-     * Simply calls the repository to get the desired list.
-     * @return a list of songs
+     * Retrieves all songs from the repository.
+     *
+     * @return a list of all available songs.
      */
     public List<Song> getAll() {
         return songRepository.findAll();
     }
 
     /**
-     * Checks if a song is already added to the list and throws an error if it exists.
-     * @param title
-     * @param artist
-     * @throws SongAlreadyExistsException if the song already exists
+     * Adds a new song after verifying if a song with the same title and artist already exists.
+     *
+     * @param songDTO DTO object that contains the information of the song to be added.
+     * @return the added song.
+     * @throws SongAlreadyExistsException if a song with the same title and artist already exists.
+     * @throws MoodNotFoundException if the mood is not found.
      */
-    public void checkIfSongAlreadyExists(final String title, final String artist) throws SongAlreadyExistsException {
+    public Song add(final SongDTO songDTO) throws SongAlreadyExistsException, MoodNotFoundException {
+        checkIfSongAlreadyExists(songDTO.getTitle(), songDTO.getArtist());
+        return songRepository.save(buildSong(songDTO));
+    }
+
+    /**
+     * Checks if a song with a specific title and artist exists in the repository.
+     *
+     * @param title the title of the song to be checked.
+     * @param artist the artist of the song to be checked.
+     * @throws SongAlreadyExistsException if the song already exists.
+     */
+    private void checkIfSongAlreadyExists(final String title, final String artist) throws SongAlreadyExistsException {
         if (songRepository.findByArtistAndTitle(artist, title).isPresent()) {
             throw new SongAlreadyExistsException("Song already exists");
         }
     }
 
     /**
-     * After ensuring that the song does not already exist, it calls the add function.
-     * @param songDTO
-     * @return calls the addSong function to add it to the repository.
-     * @throws SongAlreadyExistsException if the song already exists
-     * @throws SongNotFoundException if the song is not found
-     * @throws MoodNotFoundException if the mood is not found
+     * Builds a new Song entity based on the information in the DTO.
+     *
+     * @param songDTO the DTO object containing the information of the song to be added.
+     * @return the built Song entity.
+     * @throws MoodNotFoundException if the mood is not found.
      */
-    public Song add(final SongDTO songDTO) throws SongAlreadyExistsException, SongNotFoundException, MoodNotFoundException {
-        checkIfSongAlreadyExists(songDTO.getTitle(), songDTO.getArtist());
-        return addSong(songDTO);
-    }
-
-    /**
-     * Saves the new song entity created in the buildSong function to the repository.
-     * @param song
-     * @return the new entity
-     * @throws SongNotFoundException if the song is not found
-     * @throws MoodNotFoundException if the mood is not found
-     */
-    public Song addSong(final SongDTO song) throws MoodNotFoundException {
-        return songRepository.save(BuildSong(song));
-    }
-
-    /**
-     * Creates a new song, assigns it the values from the DTO, and creates a default mood if none exists.
-     * If the mood exists, the new song is added to the mood's list.
-     * @param songDTO
-     * @return the created song
-     * @throws MoodNotFoundException when we try to add a song to a mood that does not exist
-     */
-    public Song BuildSong(SongDTO songDTO) throws MoodNotFoundException {
-        var song = new Song();
+    private Song buildSong(final SongDTO songDTO) throws MoodNotFoundException {
+        // Create the new Song entity
+        Song song = new Song();
         song.setArtist(songDTO.getArtist());
         song.setTitle(songDTO.getTitle());
         song.setGenre(songDTO.getGenre());
-        Mood mood;
-        if (songDTO.getMoodId() == null) {
-            mood = new Mood();
-            mood.setHappiness_score(5);  // 5 is the default value
-            mood.setSadness_score(5);
-            mood.setLove_score(5);
-            mood.setEnergy_score(5);
 
-            moodRepository.save(mood);
-        } else {
-            mood = moodRepository.findById(songDTO.getMoodId()).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
-        }
-
-        if (mood.getSongs() == null) {
-            mood.setSongs(new ArrayList<>());
-        }
+        Mood mood = moodRepository.findById(songDTO.getMoodId())
+                .orElseThrow(() -> new MoodNotFoundException("Mood not found"));
 
         song.setMood(mood);
-        mood.getSongs().add(song);
-        songRepository.save(song);
-        moodRepository.save(mood);
+
+        song.setPlaylist(null);
 
         return song;
     }
 
     /**
-     * Deletes the song using the provided parameters.
-     * @param artist
-     * @param title
-     * @throws SongNotFoundException if the song is not found
-     */
-    public void deleteSong(final String artist, final String title) throws SongNotFoundException {
-        songRepository.delete(findSong(artist, title));
-    }
-
-    /**
+     * Updates an existing song based on the old title and artist and the new information from SongDTO.
      *
-     * @param title
-     * @param artist
-     * @param newSong
-     * @return
-     * @throws SongNotFoundException
+     * @param title the old title of the song to be updated.
+     * @param artist the old artist of the song to be updated.
+     * @param newSongDTO DTO object with the new information of the song.
+     * @return the updated song.
+     * @throws SongNotFoundException if no song with the specified title and artist is found.
      */
-    public Song updateSong(final String title,final String artist, final SongDTO newSong) throws SongNotFoundException {
-        Song song = songRepository.findByArtistAndTitle(artist, title).orElseThrow(() -> new SongNotFoundException("Song not found"));
-        song.setArtist(newSong.getArtist());
-        song.setTitle(newSong.getTitle());
-        song.setGenre(newSong.getGenre());
-        song.setMood(moodRepository.findAll().get(newSong.getMoodId()));
+    public Song update(final String title, final String artist, final SongDTO newSongDTO) throws SongNotFoundException {
+        Song song = songRepository.findByArtistAndTitle(artist, title)
+                .orElseThrow(() -> new SongNotFoundException("Song not found"));
+
+        // Update song details
+        song.setArtist(newSongDTO.getArtist());
+        song.setTitle(newSongDTO.getTitle());
+        song.setGenre(newSongDTO.getGenre());
+
         return songRepository.save(song);
     }
 
     /**
-     * Searches the repository list for a song using the artist and title fields.
-     * @param artist
-     * @param title
-     * @return the song with the desired artist and title
-     * @throws SongNotFoundException if the song is not found
+     * Assign a playlist to a song.
+     *
+     * @param songId the ID of the song to be updated.
+     * @param playlistId the ID of the playlist to be assigned to the song.
+     * @return the updated song.
+     * @throws SongNotFoundException if no song with the specified ID is found.
+     * @throws PlaylistNotFoundException if no playlist with the specified ID is found.
      */
-    public Song findSong(final String artist, final String title) throws SongNotFoundException {
-        return songRepository.findAll().stream()
-                .filter(song -> song.getArtist().equals(artist) && song.getTitle().equals(title))
-                .findFirst().orElseThrow(() -> new SongNotFoundException("Song not found"));
+    public Song assignPlaylistToSong(Integer songId, Integer playlistId) throws SongNotFoundException, PlaylistNotFoundException {
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new SongNotFoundException("Song not found"));
+
+        Playlist playlist = playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
+
+        song.setPlaylist(playlist);
+        return songRepository.save(song);
     }
 
     /**
-     * This time, the search is done using the mood parameter.
-     * @param mood
-     * @return the song with the desired mood
-     * @throws SongNotFoundException   if the song is not found
+     * Deletes a song from the repository based on its ID.
+     *
+     * @param songId the ID of the song to delete.
+     * @throws SongNotFoundException if no song with the specified ID is found.
      */
-    public Song findSongsByMood(final Mood mood) throws SongNotFoundException {
-        return songRepository.findAll().stream()
-                .filter(song -> song.getMood().equals(mood))
-                .findFirst().orElseThrow(() -> new SongNotFoundException("Song not found"));
+    public void delete(Integer songId) throws SongNotFoundException {
+        Song song = songRepository.findById(songId)
+                .orElseThrow(() -> new SongNotFoundException("Song not found"));
+        songRepository.delete(song);
     }
 
+    /**
+     * Finds a song by its artist and title.
+     *
+     * @param artist the artist of the song to be searched.
+     * @param title the title of the song to be searched.
+     * @return the found song.
+     * @throws SongNotFoundException if no song with the specified artist and title is found.
+     */
+    public Song findSong(final String artist, final String title) throws SongNotFoundException {
+        return songRepository.findByArtistAndTitle(artist, title)
+                .orElseThrow(() -> new SongNotFoundException("Song not found"));
+    }
+
+    /**
+     * Finds a song by its ID.
+     *
+     * @param playlistId the ID of the playlist to be searched.
+     * @return the found song.
+     * @throws SongNotFoundException if no song with the specified ID is found.
+     */
+    private Playlist findPlaylistById(Integer playlistId) throws PlaylistNotFoundException {
+        return playlistRepository.findById(playlistId)
+                .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found with id " + playlistId));
+    }
 }

@@ -3,6 +3,7 @@ package com.ubb.zenith.service;
 import com.ubb.zenith.dto.MoodDTO;
 import com.ubb.zenith.exception.MoodAlreadyExistsException;
 import com.ubb.zenith.exception.MoodNotFoundException;
+import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.Mood;
 import com.ubb.zenith.repository.MoodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import java.util.List;
 
 @Service
 public class MoodService {
-
     @Autowired
     private MoodRepository moodRepository;
 
@@ -31,20 +31,20 @@ public class MoodService {
      * @throws MoodAlreadyExistsException if the mood already exists
      */
     public void checkIfMoodAlreadyExists(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
-        if (MoodExists(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
+        if (FindByHappiness_scoreSadness_scoreLove_scoreEnergy_Score(moodDTO.getHappiness_score(), moodDTO.getLove_score(), moodDTO.getSadness_score(), moodDTO.getEnergy_score()) == true) {
             throw new MoodAlreadyExistsException("Mood already exists");
         }
     }
 
     /**
      * Checks if the mood exists, and if not, saves the created mood in the build method.
-     * @param moodDTO
+     * @param mood
      * @return the new mood after it is saved in the build method if it does not exist
      * @throws MoodAlreadyExistsException if the mood already exists
      */
-    public Mood add(final MoodDTO moodDTO) throws MoodAlreadyExistsException {
-        checkIfMoodAlreadyExists(moodDTO);
-        return moodRepository.save(buildMood(moodDTO));
+    public Mood add(final MoodDTO mood) throws MoodAlreadyExistsException {
+        checkIfMoodAlreadyExists(mood);
+        return moodRepository.save(buildMood(mood));
     }
 
     /**
@@ -74,34 +74,46 @@ public class MoodService {
 
     /**
      * Deletes a mood using the provided parameters to find the desired entity.
-     *param moodId
+     * @param happiness_score
+     * @param love_score
+     * @param sadness_score
+     * @param energy_score
      * @throws MoodNotFoundException if the mood is not found
      */
-    public void delete(final Integer moodId) throws MoodNotFoundException {
-        moodRepository.delete(findMoodById(moodId));
-    }
-
-    private Mood findMoodById(Integer moodId) throws MoodNotFoundException {
-        return moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
+    public void deleteMood(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) throws MoodNotFoundException {
+        moodRepository.delete(findMood(happiness_score, love_score, sadness_score, energy_score));
     }
 
     /**
      * Updates all fields of a mood.
-     * @param
-     * @param
-     * @param
-     * @param
-     * @para
+     * @param mood
+     * @param newhappiness_score
+     * @param newlove_score
+     * @param newsadness_score
+     * @param newenergy_score
      */
-    public Mood update(final Integer moodId, final MoodDTO newMood) throws MoodNotFoundException {
-        Mood mood = moodRepository.findById(moodId).orElseThrow(() -> new MoodNotFoundException("Mood not found"));
-        mood.setHappiness_score(newMood.getHappiness_score());
-        mood.setLove_score(newMood.getLove_score());
-        mood.setSadness_score(newMood.getSadness_score());
-        mood.setEnergy_score(newMood.getEnergy_score());
-        return  moodRepository.save(mood);
+    public void updateMood(final MoodDTO mood, final Integer newhappiness_score, final Integer newlove_score, final Integer newsadness_score, final Integer newenergy_score) {
+        mood.setHappiness_score(newhappiness_score);
+        mood.setLove_score(newlove_score);
+        mood.setSadness_score(newsadness_score);
+        mood.setEnergy_score(newenergy_score);
+        moodRepository.save(buildMood(mood));
     }
 
+    /**
+     * Finds a mood using the provided scores.
+     * @param happiness_score
+     * @param love_score
+     * @param sadness_score
+     * @param energy_score
+     * @return the mood after the wish filters are applied
+     * @throws MoodNotFoundException if the mood is not found
+     */
+    public Mood findMood(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) throws MoodNotFoundException {
+        return moodRepository.findAll().stream()
+                .filter(mood -> mood.getHappiness_score().equals(happiness_score) && mood.getLove_score().equals(love_score) && mood.getSadness_score().equals(sadness_score) && mood.getEnergy_score().equals(energy_score))
+                .findFirst().orElseThrow(() -> new MoodNotFoundException("Mood not found"));
+    }
 
     /**
      * Checks if the mood exists or not.
@@ -111,15 +123,13 @@ public class MoodService {
      * @param energy_score
      * @return false if it exists, and true if it does not exist
      */
-    public boolean MoodExists(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) {
+    public boolean FindByHappiness_scoreSadness_scoreLove_scoreEnergy_Score(final Integer happiness_score, final Integer love_score, final Integer sadness_score, final Integer energy_score) {
         List<Mood> mood = getAll();
-        if(mood.isEmpty())
-            return false;
         for (int i = 0; i < mood.size(); i++) {
-            if (mood.get(i).getHappiness_score().equals(happiness_score) && mood.get(i).getSadness_score().equals(sadness_score) && mood.get(i).getLove_score().equals( love_score) && mood.get(i).getEnergy_score().equals(energy_score))
-                return true;
+            if (mood.get(i).getHappiness_score() == happiness_score && mood.get(i).getSadness_score() == sadness_score && mood.get(i).getLove_score() == love_score && mood.get(i).getEnergy_score() == energy_score)
+                return false;
         }
-        return false;
+        return true;
     }
 
 }
