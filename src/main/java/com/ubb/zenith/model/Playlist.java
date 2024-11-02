@@ -1,6 +1,7 @@
 package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,6 +25,10 @@ public class Playlist {
     @OneToMany(mappedBy = "playlist",cascade = ALL)
     @JsonBackReference
     private List<Song> songs;
+
+    @OneToMany(mappedBy = "playlist",cascade = ALL)
+    @JsonBackReference
+    private List<UserPlaylist> userPlaylists;
 
     @NotBlank(message = "Playlist name cannot be empty")
     @Size(min = 3, max = 20, message = "Playlist name must be between 3 and 20 characters")

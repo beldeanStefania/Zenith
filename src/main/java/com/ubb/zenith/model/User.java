@@ -1,15 +1,20 @@
 package com.ubb.zenith.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
+import static jakarta.persistence.CascadeType.ALL;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -32,16 +37,16 @@ public class User {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "Password cannot be empty")
-    @Size(min = 8, message = "Password must have at least 8 characters")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-                       message = "Password must contain at least one lowercase letter, one uppercase letter, one special character and one digit")
+    //@Size(min = 8, message = "Password must have at least 8 characters")
+//    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
+//                       message = "Password must contain at least one lowercase letter, one uppercase letter, one special character and one digit")
     private String password;
 
     @Min(value = 12, message = "You must be at least 12 years old")
     private Integer age;
 
-
-
-   //de revenit cu lista de playlist-uri salvate
+    @OneToMany(mappedBy = "user", cascade = ALL)
+    @JsonManagedReference
+    private List<UserPlaylist> userPlaylists;
 
 }
