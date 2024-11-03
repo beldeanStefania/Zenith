@@ -10,8 +10,12 @@ import com.ubb.zenith.repository.PlaylistRepository;
 import com.ubb.zenith.repository.SongRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class SongService {
@@ -82,6 +86,59 @@ public class SongService {
         song.setPlaylist(null);
 
         return song;
+    }
+
+//    public void saveAudioData(Integer songId, MultipartFile file) throws IOException, ResourceNotFoundException {
+//        Song song = songRepository.findById(songId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Song not found"));
+//
+//        song.setAudioData(file.getBytes()); // Setează datele fișierului audio
+//        songRepository.save(song);
+//    }
+//
+//    public byte[] getAudioData(Integer songId) throws ResourceNotFoundException {
+//        Song song = songRepository.findById(songId)
+//                .orElseThrow(() -> new ResourceNotFoundException("Song not found"));
+//        return song.getAudioData(); // Returnează datele fișierului audio
+//    }
+//
+//    public void saveSongWithFile(String title, String artist, String genre, MultipartFile file) throws IOException {
+//        Song song = new Song();
+//        song.setTitle(title);
+//        song.setArtist(artist);
+//        song.setGenre(genre);
+//        song.setAudioData(file.getBytes()); // Convertește fișierul în byte[] și salvează-l
+//
+//        songRepository.save(song);
+//    }
+
+    public Optional<Song> findSongById(Integer id) {
+        return songRepository.findById(id);
+    }
+
+    public List<SongDTO> getAllSongsAsDTOs() {
+        return songRepository.findAll().stream()
+                .map(song -> {
+                    SongDTO dto = new SongDTO();
+                    dto.setTitle(song.getTitle());
+                    dto.setArtist(song.getArtist());
+                    dto.setGenre(song.getGenre());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public Song saveSong(String title, String artist, String genre, MultipartFile file) throws IOException {
+        Song song = new Song();
+        song.setTitle(title);
+        song.setArtist(artist);
+        song.setGenre(genre);
+
+        // Convertește fișierul într-un array de bytes
+        song.setAudioData(file.getBytes());
+
+        // Salvează melodia în baza de date
+        return songRepository.save(song);
     }
 
     /**
