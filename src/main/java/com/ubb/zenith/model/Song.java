@@ -27,6 +27,9 @@ public class Song {
 
     private String genre;
 
+    @Lob // Anotare pentru a specifica că acesta este un obiect mare
+    private byte[] audioData; // Fișier audio stocat ca byte array
+
     @ManyToOne
     @JoinColumn(name = "playlist_id")
     @JsonManagedReference

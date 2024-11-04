@@ -8,6 +8,7 @@ import com.ubb.zenith.model.Song;
 import com.ubb.zenith.service.SongService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,9 +17,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.http.ResponseEntity.badRequest;
 import static org.springframework.http.ResponseEntity.notFound;
@@ -41,6 +46,11 @@ public class SongController {
         return songService.getAll();
     }
 
+    @GetMapping("/getAllDTOs")
+    public List<SongDTO> getAllDTOs() {
+        return songService.getAllSongsAsDTOs();
+    }
+
     /**
      * Adds a new song after verifying if a song with the same title and artist already exists.
      *
@@ -57,6 +67,34 @@ public class SongController {
             return notFound().build();
         }
     }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Song> uploadSong(
+            @RequestParam("title") String title,
+            @RequestParam("artist") String artist,
+            @RequestParam(value = "genre", required = false) String genre,
+            @RequestParam("file") MultipartFile file) {
+        try {
+            Song savedSong = songService.saveSong(title, artist, genre, file);
+            return new ResponseEntity<>(savedSong, HttpStatus.CREATED);
+        } catch (IOException e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping("/play/{id}")
+    public ResponseEntity<byte[]> playSong(@PathVariable Integer id) {
+        Optional<Song> songOptional = songService.findSongById(id);
+        if (songOptional.isPresent() && songOptional.get().getAudioData() != null) {
+            return ResponseEntity.ok()
+                    .header("Content-Type", "audio/mp3") // sau "audio/mp4" dacă fișierul este audio
+                    .body(songOptional.get().getAudioData());
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+
+
 
     /**
      * Updates a song entry in the repository.
@@ -89,6 +127,11 @@ public class SongController {
         } catch (SongNotFoundException e) {
             return badRequest().build();
         }
+    }
+
+    @GetMapping
+    public List<Song> getAllSongs() {
+        return songService.getAll();
     }
 
 }

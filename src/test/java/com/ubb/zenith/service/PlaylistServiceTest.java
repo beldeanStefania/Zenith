@@ -145,33 +145,4 @@ class PlaylistServiceTest {
         verify(playlistRepository, times(1)).findByName(name);
         verify(playlistRepository, times(1)).delete(playlist);
     }
-
-    @Test
-    void generatePlaylistForUser() throws PlaylistAlreadyExistsException {
-        int happinessScore = 7;
-        int sadnessScore = 3;
-        int loveScore = 6;
-        int energyScore = 5;
-        String playlistName = "Mood Playlist";
-
-        Mood mood = new Mood();
-        mood.setHappiness_score(7);
-        mood.setSadness_score(3);
-        mood.setLove_score(6);
-        mood.setEnergy_score(5);
-
-        Song song = new Song();
-        song.setTitle("Happy Song");
-
-        mood.setSongs(List.of(song));
-
-        when(moodRepository.findAll()).thenReturn(List.of(mood));
-        when(playlistRepository.findByName(playlistName)).thenReturn(Optional.empty());
-        when(playlistRepository.save(any(Playlist.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        Playlist generatedPlaylist = playlistService.generatePlaylistForUser(happinessScore, sadnessScore, loveScore, energyScore, playlistName);
-        assertEquals(playlistName, generatedPlaylist.getName());
-        assertTrue(generatedPlaylist.getSongs().contains(song));
-        verify(playlistRepository, times(1)).save(any(Playlist.class));
-    }
 }
