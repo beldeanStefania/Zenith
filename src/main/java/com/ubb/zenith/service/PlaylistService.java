@@ -26,9 +26,6 @@ public class PlaylistService {
     @Autowired
     private SongRepository songRepository;
 
-    @Autowired
-    private MoodRepository moodRepository;
-
     /**
      * Retrieves all playlists from the repository.
      *
@@ -146,56 +143,6 @@ public class PlaylistService {
     public void delete(final String name) throws PlaylistNotFoundException {
         Playlist playlist = findPlaylist(name);
         playlistRepository.delete(playlist);
-    }
-
-
-    /**
-     * Generates a playlist based on the user's mood scores.
-     *
-     * @param happinessScore the happiness score of the user.
-     * @param sadnessScore the sadness score of the user.
-     * @param loveScore the love score of the user.
-     * @param energyScore the energy score of the user.
-     * @param playlistName the name of the playlist to be generated.
-     * @return the generated playlist.
-     * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
-     */
-    public Playlist generatePlaylistForUser(Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException {
-        checkIfPlaylistAlreadyExists(playlistName);
-        List<Mood> allMoods = moodRepository.findAll();
-        List<Song> matchingSongs = allMoods.stream()
-                .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
-                .flatMap(mood -> mood.getSongs().stream())
-                .collect(Collectors.toList());
-        Playlist playlist = new Playlist();
-        playlist.setName(playlistName);
-
-
-        matchingSongs.forEach(song -> song.setPlaylist(playlist));
-
-        playlist.setSongs(matchingSongs);
-
-        return playlistRepository.save(playlist);
-    }
-
-    /**
-     * Checks if a mood matches the user's mood scores.
-     *
-     * @param mood the mood to be checked.
-     * @param happinessScore the happiness score of the user.
-     * @param sadnessScore the sadness score of the user.
-     * @param loveScore the love score of the user.
-     * @param energyScore the energy score of the user.
-     * @return true if the mood matches the user's mood scores, false otherwise.
-     */
-    private boolean isMoodMatch(Mood mood, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore) {
-        // Define a threshold for matching (e.g., +/- 2 points)
-        int threshold = 2;
-
-        return Math.abs(mood.getHappiness_score() - happinessScore) <= threshold
-                && Math.abs(mood.getSadness_score() - sadnessScore) <= threshold
-                && Math.abs(mood.getLove_score() - loveScore) <= threshold
-                && Math.abs(mood.getEnergy_score() - energyScore) <= threshold;
     }
 
     /**

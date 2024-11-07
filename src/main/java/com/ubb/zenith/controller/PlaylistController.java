@@ -84,45 +84,6 @@ public class PlaylistController {
     }
 
     /**
-     * Generates a playlist based on the mood scores provided.
-     *
-     * @param playlistName the name of the playlist to be generated.
-     * @param moodDTO the DTO object containing the mood scores.
-     * @return the generated playlist.
-     */
-    @PostMapping("/generate/{playlistName}")
-    public ResponseEntity<Playlist> generatePlaylist(@PathVariable String playlistName, @RequestBody MoodDTO moodDTO) {
-        try {
-
-            Playlist playlist = playlistService.generatePlaylistForUser(
-                    moodDTO.getHappiness_score(),
-                    moodDTO.getSadness_score(),
-                    moodDTO.getLove_score(),
-                    moodDTO.getEnergy_score(),
-                    playlistName  // Optional name for the generated playlist
-            );
-            return ResponseEntity.ok(playlist);
-        } catch (PlaylistAlreadyExistsException e) {
-            return notFound().build();
-        }
-    }
-
-    /**
-     * Retrieves all songs from a playlist.
-     *
-     * @param playlistName the name of the playlist to get the songs from.
-     * @return a list of all songs in the playlist.
-     */
-    @PostMapping("/getSongsFromPlaylist/{playlistName}")
-    public ResponseEntity<List<Song>> getSongsFromPlaylist(@PathVariable String playlistName) {
-        try {
-            return ok(playlistService.getSongsFromPlaylist(playlistName));
-        } catch (PlaylistNotFoundException e) {
-            return badRequest().build();
-        }
-    }
-
-    /**
      * Updates a playlist entry in the repository.
      *
      * @param oldName the name of the playlist to be updated.
