@@ -1,11 +1,21 @@
 package com.ubb.zenith.service;
-
+/**
+import com.ubb.zenith.config.ApplicationConfig;
+import com.ubb.zenith.controller.AuthenticationRequest;
+import com.ubb.zenith.controller.AuthenticationResponse;*/
+import com.ubb.zenith.controller.AuthenticationRequest;
+import com.ubb.zenith.controller.AuthenticationResponse;
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
+import com.ubb.zenith.model.MyUserDetails;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,7 +24,8 @@ import java.util.List;
 public class UserService {
 
     @Autowired
-    private UserRepository userRepository;
+    private UserRepository userRepository;git
+   private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
     /**
      * Retrieves all users from the repository.
@@ -34,7 +45,12 @@ public class UserService {
      */
     public User add(final UserDTO userDTO) throws UserAlreadyExistsException {
         checkIfUserAlreadyExists(userDTO.getUsername());
-        return add(buildUser(userDTO));
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        var user = buildUser(userDTO);
+
+        return userRepository.save(user);
+       // var jwt = jwtService.generateToken(user);
+        //return AuthenticationResponse.builder().token(jwt).build();
     }
 
     /**
@@ -124,5 +140,7 @@ public class UserService {
         findUser(username);
         userRepository.delete(findUser(username));
     }
+
+
 
 }
