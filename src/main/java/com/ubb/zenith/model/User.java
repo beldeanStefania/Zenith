@@ -2,16 +2,12 @@ package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -22,7 +18,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class User {
+public class User{
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -48,5 +44,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = ALL)
     @JsonManagedReference
     private List<UserPlaylist> userPlaylists;
+
 
 }

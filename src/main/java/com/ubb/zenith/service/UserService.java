@@ -6,6 +6,7 @@ import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +16,7 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
     /**
      * Retrieves all users from the repository.
      *
@@ -34,7 +35,12 @@ public class UserService {
      */
     public User add(final UserDTO userDTO) throws UserAlreadyExistsException {
         checkIfUserAlreadyExists(userDTO.getUsername());
-        return add(buildUser(userDTO));
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        var user = buildUser(userDTO);
+
+        return userRepository.save(user);
+        // var jwt = jwtService.generateToken(user);
+        //return AuthenticationResponse.builder().token(jwt).build();
     }
 
     /**
