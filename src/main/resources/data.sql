@@ -1,20 +1,35 @@
+INSERT into mood(energy_score, happiness_score, love_score, sadness_score) values (4, 6, 7, 8), #crymeariver
+                        (7, 9, 3, 1), #cyclone
+                        (3, 8, 8, 7), #escapism
+                        (3, 9, 4, 8), #faint
+                        (4, 6, 5, 8), #fallback
+                        (7, 10, 4, 1), #fein
+                        (9, 10, 7, 1), #ferrari
+                        (5, 6, 9, 7), #friends
+                        (6, 8, 3, 4), #goosebumps
+                        (7, 8, 6, 5), #highestintheroom
+                        (3, 5, 9, 9), #loveisblind
+                        (8, 7, 9, 3), #loveistheway
+                        (5, 6, 9, 6), #loveonthebrain
+                        (3, 5, 6, 9), #mockingbird
+                        (9, 8, 6, 1), #mrsaxobeat
+                        (9, 8, 1, 1), #numaduclaclub
+                        (9, 10, 4, 1), #onthefloor
+                        (7, 6, 8, 2), #stereolove
+                        (9, 10, 8, 1), #suavemente
+                        (4, 6, 5, 8), #superman
+                        (4, 4, 9, 7), #teamo
+                        (4, 5, 8, 8); # thehills
 
-INSERT INTO mood (energy_score, happiness_score, love_score, sadness_score) VALUES
-                                                                                    (2, 1, 0, 9),  -- mood pentru cântece triste
-                                                                                    (8, 9, 5, 1),  -- mood pentru cântece fericite
-                                                                                    (7, 5, 6, 2),  -- mood pentru cântece energice
-                                                                                     (3, 3, 4, 6); -- mood neutru
+UPDATE song SET mood_id = id where id between 1 and 22;
+UPDATE song set genre = 'Pop' where id in ( 3, 11, 12, 16);
+UPDATE  song set genre = 'R&B' where id in ( 1, 8, 13, 22);
+UPDATE song set genre = 'Hip-Hop' where id in ( 2, 6, 9, 10, 14, 20);
+UPDATE song set genre = 'Dance' where  id in (7, 15, 17, 18, 19);
+UPDATE song set genre = 'Rock' where  id = 4;
+UPDATE song set genre = 'Electronic' where id = 5;
+UPDATE song set genre = 'Reggae' where id = 21;
 
-INSERT INTO song (artist, genre, title, mood_id, playlist_id) VALUES
-                                                                      ('Artist1', 'Pop', 'Sad Song 1', 1, NULL),
-                                                                      ('Artist2', 'Pop', 'Happy Song 1', 2, NULL),
-                                                                      ('Artist3', 'Rock', 'Energetic Song 1', 3, NULL),
-                                                                      ('Artist4', 'Jazz', 'Calm Song 1', 4, NULL),
-                                                                      ('Artist5', 'Pop', 'Sad Song 2', 1, NULL),
-                                                                      ('Artist6', 'Rock', 'Happy Song 2', 2, NULL),
-                                                                      ('Artist7', 'Electronic', 'Energetic Song 2', 3, NULL),
-                                                                      ('Artist8', 'Pop', 'Calm Song 2', 4, NULL);
 
-INSERT INTO playlist (name) VALUES
-                                    ('Chill Vibes'),
-                                    ('Workout Mix');
+
+
