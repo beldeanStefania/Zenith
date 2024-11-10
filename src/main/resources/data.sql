@@ -30,6 +30,6 @@ UPDATE song set genre = 'Rock' where  id = 4;
 UPDATE song set genre = 'Electronic' where id = 5;
 UPDATE song set genre = 'Reggae' where id = 21;
 
-
+INSERT INTO user(username,email,password,age) Values ('Alex','alexandru.com','$2a$12$ChDeMO7MgsJwzDPVKTKhMeVaV35y3qrVZQhns2VgIzRaisDInizlq',17)
 
 
