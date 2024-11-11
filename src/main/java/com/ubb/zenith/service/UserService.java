@@ -1,11 +1,17 @@
 package com.ubb.zenith.service;
 
+import com.ubb.zenith.controller.AuthenticationRequest;
+import com.ubb.zenith.controller.AuthenticationResponse;
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
+import com.ubb.zenith.model.MyUserDetails;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +23,11 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+    @Autowired
+    public AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtService jwtService;
     /**
      * Retrieves all users from the repository.
      *
@@ -131,4 +142,9 @@ public class UserService {
         userRepository.delete(findUser(username));
     }
 
+    public AuthenticationResponse login(AuthenticationRequest user) {
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        User user1 = userRepository.findByUsername(user.getUsername()).get();
+        return AuthenticationResponse.builder().token(jwtService.generateToken(new MyUserDetails(user1))).build();
+    }
 }
