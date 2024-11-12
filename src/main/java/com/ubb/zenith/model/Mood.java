@@ -14,6 +14,7 @@ import lombok.Setter;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.LAZY;
 import static jakarta.persistence.GenerationType.IDENTITY;
 
 @Entity
@@ -43,7 +44,7 @@ public class Mood {
     @Max(value = 10, message = "energy_score must be at most 10")
     private Integer energy_score;
 
-    @OneToMany(mappedBy = "mood", cascade = ALL)
+    @OneToMany(mappedBy = "mood", cascade = ALL, fetch = LAZY)
     @JsonManagedReference
     private List<Song> songs;
 }

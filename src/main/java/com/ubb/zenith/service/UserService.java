@@ -1,11 +1,20 @@
 package com.ubb.zenith.service;
 
+import com.ubb.zenith.controller.AuthenticationRequest;
+import com.ubb.zenith.controller.AuthenticationResponse;
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
+//import com.ubb.zenith.model.MyUserDetails;
+import com.ubb.zenith.model.Role;
 import com.ubb.zenith.model.User;
+import com.ubb.zenith.repository.RoleRepository;
 import com.ubb.zenith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,7 +24,16 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
+    @Autowired
+    public AuthenticationManager authenticationManager;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+//    @Autowired
+//    private JwtService jwtService;
     /**
      * Retrieves all users from the repository.
      *
@@ -34,7 +52,12 @@ public class UserService {
      */
     public User add(final UserDTO userDTO) throws UserAlreadyExistsException {
         checkIfUserAlreadyExists(userDTO.getUsername());
-        return add(buildUser(userDTO));
+        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        var user = buildUser(userDTO);
+
+        return userRepository.save(user);
+        // var jwt = jwtService.generateToken(user);
+        //return AuthenticationResponse.builder().token(jwt).build();
     }
 
     /**
@@ -56,11 +79,15 @@ public class UserService {
      * @return the built user.
      */
     public User buildUser(final UserDTO userDTO) {
+        Role userRole = roleRepository.findByName("USER")
+                .orElseThrow(() -> new RuntimeException("Role USER not found in the database"));
+
         var user = new User();
         user.setUsername(userDTO.getUsername());
         user.setPassword(userDTO.getPassword());
         user.setEmail(userDTO.getEmail());
         user.setAge(userDTO.getAge());
+        user.setRole(userRole);
         return user;
     }
 
@@ -125,4 +152,9 @@ public class UserService {
         userRepository.delete(findUser(username));
     }
 
+//    public AuthenticationResponse login(AuthenticationRequest user) {
+//        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+//        User user1 = userRepository.findByUsername(user.getUsername()).get();
+//        return AuthenticationResponse.builder().token(jwtService.generateToken(new MyUserDetails(user1))).build();
+//    }
 }
