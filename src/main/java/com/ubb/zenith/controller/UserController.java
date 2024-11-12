@@ -88,8 +88,8 @@ public class UserController {
         }
     }
 
-    @PostMapping("/login")
-    public AuthenticationResponse login(@RequestBody AuthenticationRequest user) {
-        return userService.login(user);
-    }
+//    @PostMapping("/login")
+//    public AuthenticationResponse login(@RequestBody AuthenticationRequest user) {
+//        return userService.login(user);
+//    }
 }

@@ -1,5 +1,6 @@
 package com.ubb.zenith.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
@@ -44,6 +45,11 @@ public class User{
     @OneToMany(mappedBy = "user", cascade = ALL)
     @JsonManagedReference
     private List<UserPlaylist> userPlaylists;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false)
+    @JsonBackReference
+    private Role role;
 
 
 }
