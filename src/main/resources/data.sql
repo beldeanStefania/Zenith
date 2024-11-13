@@ -20,7 +20,7 @@ INSERT into mood(energy_score, happiness_score, love_score, sadness_score) value
                         (4, 6, 5, 8),-- #superman
                         (4, 4, 9, 7),-- #teamo
                         (4, 5, 8, 8); -- # thehills
-=======
+
 INSERT into mood(energy_score, happiness_score, love_score, sadness_score) values (4, 6, 7, 8), -- crymeariver
                                                                                   (7, 9, 3, 1), -- cyclone
                                                                                   (3, 8, 8, 7), -- escapism
@@ -43,7 +43,6 @@ INSERT into mood(energy_score, happiness_score, love_score, sadness_score) value
                                                                                   (4, 6, 5, 8), -- superman
                                                                                   (4, 4, 9, 7), -- teamo
                                                                                   (4, 5, 8, 8); -- thehills
->>>>>>> Stashed changes
 
 UPDATE song SET mood_id = id where id between 1 and 22;
 UPDATE song set genre = 'Pop' where id in ( 3, 11, 12, 16);
