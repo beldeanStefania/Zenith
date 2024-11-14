@@ -32,8 +32,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
+                                "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config").permitAll()
                         .requestMatchers("/api/song/**").permitAll() // permite accesul la acest endpoint fără autentificare
-                        .anyRequest().authenticated() // restul endpoint-urilor necesită autentificare
+                        .anyRequest().permitAll() // restul endpoint-urilor necesită autentificare
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // configurează CORS folosind metoda corsConfigurationSource
                 .csrf(csrf -> csrf.disable()); // dezactivează CSRF
