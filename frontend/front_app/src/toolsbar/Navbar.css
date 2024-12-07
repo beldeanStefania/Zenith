@@ -1,0 +1,55 @@
+/* Navbar.css */
+
+.navbar {
+  background-color: "transparent";
+  color: var(--light-gray);
+  display: flex;
+  height: 10vh;
+}
+
+.logo {
+  display: flex;
+}
+
+.button {
+  background: linear-gradient(90deg, var(--pink), var(--light-blue));
+  border-radius: 999px;
+  box-sizing: border-box;
+  display: block;
+  overflow: hidden;
+  padding: 1.8rem 5rem;
+  position: relative;
+  text-transform: uppercase;
+  display: inline-block;
+  margin: 0 0.5rem;
+}
+.button h1 {
+  background: var(--dark-gray);
+  border-radius: 999px;
+  color: var(--light-gray);
+  display: grid;
+  inset: 5px;
+  place-items: center;
+  position: absolute;
+  transition: background 0.5s;
+  font-size: 1rem;
+  font-weight: 900;
+}
+.button:hover h1 {
+  background: none;
+}
+
+.pos_button_1 {
+  position: absolute;
+  right: 1%;
+  top: 2%;
+}
+
+@media screen and (max-width: 800px) {
+  .button {
+    padding: 1.7rem 3rem;
+  }
+  .button h1 {
+    font-size: 0.7rem;
+  }
+}

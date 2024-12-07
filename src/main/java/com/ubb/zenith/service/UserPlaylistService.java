@@ -13,6 +13,7 @@ import com.ubb.zenith.repository.PlaylistRepository;
 import com.ubb.zenith.repository.SongRepository;
 import com.ubb.zenith.repository.UserPlaylistRepository;
 import com.ubb.zenith.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,9 +53,12 @@ public class UserPlaylistService {
      * @return the generated playlist.
      * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
      */
-    public UserPlaylist generatePlaylistForUser(String username, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException {
+    @Transactional
+    public UserPlaylist generatePlaylistForUser(String username, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException, PlaylistNotFoundException {
         // Verifică dacă playlistul există deja
-        checkIfPlaylistAlreadyExists(playlistName);
+        if (checkIfPlaylistAlreadyExists(playlistName)) {
+           return null;
+        }
 
         // Obține toate mood-urile și filtrează melodiile potrivite
         List<Mood> allMoods = moodRepository.findAll();
@@ -62,6 +66,10 @@ public class UserPlaylistService {
                 .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
                 .flatMap(mood -> mood.getSongs().stream())
                 .collect(Collectors.toList());
+
+//        if (matchingSongs.isEmpty()) {
+//            return new UserPlaylist();
+//        }
 
         // Creează un nou playlist și îl salvează
         Playlist playlist = new Playlist();
@@ -93,17 +101,17 @@ public class UserPlaylistService {
     }
 
 
-
     /**
      * Checks if a playlist with a specific name exists in the repository.
      *
      * @param name the name of the playlist to be checked.
      * @throws PlaylistAlreadyExistsException if the playlist already exists.
      */
-    public void checkIfPlaylistAlreadyExists(final String name) throws PlaylistAlreadyExistsException {
+    public boolean checkIfPlaylistAlreadyExists(final String name) throws PlaylistAlreadyExistsException {
         if (playlistRepository.findByName(name).isPresent()) {
-            throw new PlaylistAlreadyExistsException("Playlist already exists");
+            return true;
         }
+        return false;
     }
 
     /**
@@ -124,7 +132,8 @@ public class UserPlaylistService {
         int adjustedEnergy = energyScore * 2;
 
         // Prag flexibil: crește dacă valorile sunt la extremități (ex. 1 sau 5 în chestionar)
-        int threshold = (happinessScore == 1 || sadnessScore == 5 || loveScore == 1 || energyScore == 1) ? 3 : 2;
+        //int threshold = (happinessScore == 1 || sadnessScore == 5 || loveScore == 1 || energyScore == 1) ? 3 : 2;
+        int threshold = 2;
 
         // Comparăm scorurile ajustate cu scorurile melodiilor
         return Math.abs(mood.getHappiness_score() - adjustedHappiness) <= threshold

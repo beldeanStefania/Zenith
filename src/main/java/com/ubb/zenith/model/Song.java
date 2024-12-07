@@ -29,7 +29,7 @@ public class Song {
     private String genre;
 
     @Lob // Anotare pentru a specifica că acesta este un obiect mare
-    @JsonIgnore
+    //@JsonIgnore
     private byte[] audioData; // Fișier audio stocat ca byte array
 
     @ManyToOne

@@ -1,0 +1,71 @@
+.swiper {
+  width: 100%;
+  padding: 5vh 0;
+}
+
+.swiper-slide {
+  background-color: var(--mainColor);
+  width: 20vw;
+  height: 60vh;
+  border-radius: var(--rounded);
+  display: grid;
+  justify-content: center;
+  box-shadow: 0 0 1vw var(--mainColor), 0 0 2vw var(--shadow-slider);
+}
+
+.image {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--rounded);
+}
+
+.image img {
+  height: 100%;
+  width: 100%;
+}
+
+.info {
+  padding: 1vh 2vw;
+  color: var(--themeColor);
+  display: flex;
+}
+.sub {
+  color: var(--sub-gray);
+  font-size: 1.5vw;
+}
+.survey {
+  top: 80%;
+  right: 75%;
+  position: absolute;
+}
+
+.text {
+  font-size: 1.5vw;
+  color: var(--light-gray);
+  top: 60%;
+  position: absolute;
+  font-weight: bold;
+}
+
+.swiper-pagination {
+  bottom: 0;
+}
+
+.img {
+  height: 100%;
+  width: 100%;
+}
+
+.text2 {
+  font-size: 1.4vw;
+  color: var(--light-gray);
+  top: 65%;
+  position: absolute;
+  font-weight: bold;
+}
+
+.singIn {
+  top: 83%;
+  right: 75%;
+  position: absolute;
+}

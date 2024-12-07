@@ -1,0 +1,9 @@
+.subwoofer {
+  background-color: var(--center-gray);
+  border-radius: 50%;
+  box-shadow: 0px 0px 0px 5px var(--ba-wi), 0px 0px 0px 40px var(--sub-gray),
+    0px 0px 0px 50px var(--white);
+  width: 100px;
+  height: 100px;
+  margin: 3em;
+}
