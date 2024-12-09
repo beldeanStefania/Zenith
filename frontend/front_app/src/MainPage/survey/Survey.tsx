@@ -7,7 +7,7 @@ import axios from "axios";
 
 const username = "Alex";
 
-// Întrebările chestionarului fără ponderi
+// Întrebările chestionarului
 const questions = [
   "How excited are you about your future?",
   "How easy was it for you to smile today?",
@@ -15,44 +15,47 @@ const questions = [
   "How eager are you to start something new?",
 ];
 
-// Funcție pentru generarea unui identificator unic scurt pentru numele playlistului
 const generateShortId = () => Math.random().toString(16).slice(2, 6);
 
-const Survey = ({
-  show,
-  setShowSurvey,
-}: {
+interface SurveyProps {
   show: boolean;
-  setShowSurvey: Function;
-}) => {
+  setShowSurvey: (show: boolean) => void;
+}
+
+const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [playlistName, setPlaylistName] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Funcție pentru gestionarea răspunsurilor utilizatorului
   const handleAnswer = (answer: number) => {
     const updatedAnswers = [...answers, answer];
     setAnswers(updatedAnswers);
 
-    // Dacă este ultima întrebare, generează playlistul
     if (currentQuestionIndex === questions.length - 1) {
       handleGeneratePlaylist(updatedAnswers);
     }
     setCurrentQuestionIndex(currentQuestionIndex + 1);
   };
 
-  // Funcție pentru generarea playlistului
   const handleGeneratePlaylist = async (answers: number[]) => {
-    try {
-      setLoading(true);
+    setLoading(true);
+    setErrorMessage(null);
 
-      // Generează un nume unic pentru playlist
+    const token = localStorage.getItem("token");
+    if (!token) {
+      // Utilizatorul nu este autentificat
+      setErrorMessage("You must be logged in to generate a playlist.");
+      setLoading(false);
+      return;
+    }
+
+    try {
       const generatedPlaylistName = `playlist_${username}_${generateShortId()}`;
       setPlaylistName(generatedPlaylistName);
 
-      // Creează obiectul MoodDTO cu răspunsurile brute
       const moodDTO = {
         happiness_score: answers[0],
         sadness_score: answers[1],
@@ -62,38 +65,41 @@ const Survey = ({
 
       console.log("MoodDTO sent to back-end:", moodDTO);
 
-      // Trimite cererea către back-end
       const response = await axios.post(
         `http://localhost:8080/api/userPlaylist/generate/${username}/${generatedPlaylistName}`,
-        moodDTO
+        moodDTO,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
       console.log("Playlist generated successfully:", response.data);
       setShowPlaylist(true);
       setLoading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error generating playlist:", error);
+      setErrorMessage("Failed to generate playlist. Please try again.");
       setLoading(false);
     }
   };
 
-  // Funcție pentru închiderea chestionarului
   const handleCloseSurvey = () => {
     setShowSurvey(false);
     setAnswers([]);
     setCurrentQuestionIndex(0);
+    setErrorMessage(null);
   };
 
   const isLastQuestion = currentQuestionIndex >= questions.length;
 
   return (
     <>
-      {/* Buton pentru deschiderea chestionarului */}
       <button onClick={() => setShowSurvey(true)} className="styleButton">
         Try now
       </button>
 
-      {/* Fereastra modală a chestionarului */}
       <ReactModal
         isOpen={show}
         onRequestClose={handleCloseSurvey}
@@ -109,10 +115,13 @@ const Survey = ({
         ) : (
           <div className="summary">
             <h2>Thank you for completing the survey!</h2>
-            {loading ? <p>Loading...</p> : null}
-            <button className="create" onClick={() => setShowPlaylist(true)}>
-              View Playlist
-            </button>
+            {loading && <p>Loading...</p>}
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+            {!loading && !errorMessage && (
+              <button className="create" onClick={() => setShowPlaylist(true)}>
+                View Playlist
+              </button>
+            )}
             <button className="create" onClick={handleCloseSurvey}>
               Close Survey
             </button>
@@ -120,7 +129,6 @@ const Survey = ({
         )}
       </ReactModal>
 
-      {/* Fereastra modală pentru vizualizarea playlistului */}
       <PlaylistModal
         isOpen={showPlaylist}
         onRequestClose={() => setShowPlaylist(false)}

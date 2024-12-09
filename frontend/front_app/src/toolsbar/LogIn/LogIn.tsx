@@ -1,17 +1,45 @@
+import React, { useState } from "react";
 import Modal from "react-modal";
+import axios from "axios";
 import "./LogIn.css";
 
-const LogIn = ({
-  showlog,
-  setShowlog,
-}: {
+interface LogInProps {
   showlog: boolean;
-  setShowlog: Function;
-}) => {
+  setShowlog: (show: boolean) => void;
+}
+
+const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/auth/login", {
+        username,
+        password,
+      });
+
+      const token = response.data;
+      if (typeof token === "string") {
+        localStorage.setItem("token", token);
+        setShowlog(false);
+      } else {
+        setLoginError("Invalid response from server.");
+      }
+    } catch (error: any) {
+      console.error("Login error:", error);
+      setLoginError("Invalid username or password.");
+    }
+  };
+
   return (
     <Modal
-      isOpen={showlog} // Modalul se va deschide doar dacă showlog este true
-      onRequestClose={() => setShowlog(false)} // Va închide modalul la click pe overlay sau butonul de închidere
+      isOpen={showlog}
+      onRequestClose={() => setShowlog(false)}
       contentLabel="LogIn"
       overlayClassName="customOverlay"
       className="customModalLogIn"
@@ -19,9 +47,8 @@ const LogIn = ({
       <button
         type="button"
         className="close"
-        data-dismiss="modal"
         aria-label="Close"
-        onClick={() => setShowlog(false)} // Închide modalul la click
+        onClick={() => setShowlog(false)}
       >
         <span aria-hidden="true">&times;</span>
       </button>
@@ -29,7 +56,7 @@ const LogIn = ({
       <div className="login">
         <div className="form">
           <h1>Log In</h1>
-          <form>
+          <form onSubmit={handleSubmit}>
             <label htmlFor="user" className="position">
               Username
             </label>
@@ -38,7 +65,10 @@ const LogIn = ({
               className="form-user-login"
               id="user"
               placeholder="Enter Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
+
             <label htmlFor="password" className="position">
               Password
             </label>
@@ -47,7 +77,12 @@ const LogIn = ({
               className="form-control-login"
               id="password"
               placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
+
+            {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+
             <button type="submit" className="btn-login">
               Submit
             </button>
