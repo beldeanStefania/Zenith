@@ -1,5 +1,7 @@
 package com.ubb.zenith.config;
 
+import com.ubb.zenith.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,20 +30,27 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
+    @Autowired
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-resources/**",
                                 "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config").permitAll()
-                        .requestMatchers("/api/song/**").permitAll() // permite accesul la acest endpoint fără autentificare
-                        .anyRequest().permitAll() // restul endpoint-urilor necesită autentificare
+                        .requestMatchers("/api/song/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // login-ul trebuie să fie deschis
+                        .requestMatchers("/api/userPlaylist/**").authenticated() // acum necesită autentificare
+                        .anyRequest().permitAll()
                 )
-                .cors(cors -> cors.configurationSource(corsConfigurationSource())) // configurează CORS folosind metoda corsConfigurationSource
-                .csrf(csrf -> csrf.disable()); // dezactivează CSRF
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+                .addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class); // IMPORTANT
 
         return http.build();
     }
+
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
