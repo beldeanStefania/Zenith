@@ -1,102 +1,151 @@
+import React, { useState } from "react";
 import Modal from "react-modal";
+import axios from "axios";
 import "./SingUp.css";
 
-const SingUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
+const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    // Input validation
+    if (email !== confirmEmail) {
+      setErrorMessage("Emails do not match.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
+    try {
+      const response = await axios.post("http://localhost:8080/api/user/add", {
+        username,
+        email,
+        password,
+      });
+
+      if (response.status === 200) {
+        setSuccessMessage("Account created successfully. You can now log in.");
+        // Clear input fields
+        setUsername("");
+        setEmail("");
+        setConfirmEmail("");
+        setPassword("");
+        setConfirmPassword("");
+      } else {
+        setErrorMessage("Something went wrong. Please try again.");
+      }
+    } catch (error: any) {
+      console.error("Error while signing up:", error);
+      if (error.response && error.response.status === 404) {
+        setErrorMessage("User with this username already exists.");
+      } else {
+        setErrorMessage("An unexpected error occurred. Please try again later.");
+      }
+    }
+  };
+
   return (
-    <>
-      <Modal
-        isOpen={show}
-        onRequestClose={() => setShow(false)}
-        contentLabel="SingUp"
-        overlayClassName="customOverlay"
-        className="customModalSingUp"
+    <Modal
+      isOpen={show}
+      onRequestClose={() => setShow(false)}
+      contentLabel="SignUp"
+      overlayClassName="customOverlay"
+      className="customModalSingUp"
+    >
+      <button 
+        type="button"
+        className="close"
+        aria-label="Close"
+        onClick={() => setShow(false)}
       >
-        <button 
-          type="button"
-          className="close"
-          data-dismiss="modal"
-          aria-label="Close"
-          onClick={() => setShow(false)}
-        >
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <span aria-hidden="true">&times;</span>
+      </button>
 
-        <div className="singup">
-          <div className="form">
-            <h1>Sign Up</h1>
-            <form>
-              <label htmlFor="exampleInputEmail1" className="position">
-                Username
-              </label>
-              <div className="form-group">
-                <input
-                  type="text"
-                  className="form-user"
-                  id="fname"
-                  aria-describedby="emailHelp"
-                  placeholder="Enter First Name"
-                />
-                <input
-                  type="text"
-                  className="form-user2"
-                  id="lname"
-                  aria-describedby="emailHelp"
-                  placeholder="Enter Last Name"
-                />
-              </div>
-              <label htmlFor="exampleInputEmail1" className="position">
-                Email address
-              </label>
-              <div className="form-group">
-                <input
-                  type="email"
-                  className="form-control"
-                  id="exampleInputEmail1"
-                  aria-describedby="emailHelp"
-                  placeholder="Enter email"
-                />
-              </div>
-              <div className="form-group">
-                <input
-                  type="email"
-                  className="form-control"
-                  id="exampleInputEmail1"
-                  aria-describedby="emailHelp"
-                  placeholder="Confirm email"
-                />
-              </div>
-              <label htmlFor="exampleInputPassword1" className="position">
-                Password
-              </label>
-              <div className="form-group">
-                <input
-                  type="password"
-                  className="form-control"
-                  id="exampleInputPassword1"
-                  placeholder="Password"
-                />
-              </div>
-              <div className="form-group">
-                <input
-                  type="password"
-                  className="form-control"
-                  id="exampleInputPassword1"
-                  placeholder="Confirm Password"
-                />
-              </div>
+      <div className="signup">
+        <div className="form">
+          <h1>Sign Up</h1>
+          <form onSubmit={handleSubmit}>
+            {/* Username Field */}
+            <label htmlFor="username" className="position">Username</label>
+            <div className="form-group">
+              <input
+                type="text"
+                className="form-user"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter Username"
+                required
+              />
+            </div>
 
-              <button type="submit" className="btn-singup">
-                Sign In
-              </button>
-            </form>
-            <a href="#" className="forgot">
-              Already have an account? Sign In
-            </a>
-          </div>
+            {/* Email Field */}
+            <label htmlFor="email" className="position">Email address</label>
+            <div className="form-group">
+              <input
+                type="email"
+                className="form-control"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter email"
+                required
+              />
+              <input
+                type="email"
+                className="form-control"
+                id="confirmEmail"
+                value={confirmEmail}
+                onChange={(e) => setConfirmEmail(e.target.value)}
+                placeholder="Confirm email"
+                required
+              />
+            </div>
+
+            {/* Password Field */}
+            <label htmlFor="password" className="position">Password</label>
+            <div className="form-group">
+              <input
+                type="password"
+                className="form-control"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+              />
+              <input
+                type="password"
+                className="form-control"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm password"
+                required
+              />
+            </div>
+
+            {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+            {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+
+            <button type="submit" className="btn-singup">Sign Up</button>
+          </form>
+          <a href="#" className="forgot">Already have an account? Sign In</a>
         </div>
-      </Modal>
-    </>
+      </div>
+    </Modal>
   );
 };
 
-export default SingUp;
+export default SignUp;

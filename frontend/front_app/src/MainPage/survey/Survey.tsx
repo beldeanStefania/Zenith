@@ -9,10 +9,10 @@ const username = "Alex";
 
 // Întrebările chestionarului
 const questions = [
-  "How excited are you about your future?",
-  "How easy was it for you to smile today?",
-  "How motivated are you to complete your daily tasks?",
-  "How eager are you to start something new?",
+  "How much do you feel like smiling today?",
+  "How often did you feel down or upset today?",
+  "How strongly do you feel connected or caring towards others right now?",
+  "How motivated do you feel to perform physical or mental tasks today?",
 ];
 
 const generateShortId = () => Math.random().toString(16).slice(2, 6);
