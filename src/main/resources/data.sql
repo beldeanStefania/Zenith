@@ -19,16 +19,53 @@ INSERT into mood(energy_score, happiness_score, love_score, sadness_score) value
                         (9, 10, 8, 1), #suavemente
                         (4, 6, 5, 8), #superman
                         (4, 4, 9, 7), #teamo
-                        (4, 5, 8, 8); # thehills
+                        (4, 5, 8, 8), #thehills
+                        (7, 8, 9, 2), #adoreu
+                        (6, 10, 9, 1), #alliwantforchristmasisu
+                        (5, 6, 7, 4), #apt
+                        (3, 5, 8, 9), #changes
+                        (9, 9, 6, 2), #cheapthrills
+                        (8, 7, 6, 4), #countingstars
+                        (7, 6, 7, 3), #darkhorse
+                        (5, 4, 6, 9), #faded
+                        (2, 3, 9, 10), #hello
+                        (9, 9, 5, 1), #hipsdontlie
+                        (4, 3, 9, 10), #lethergo
+                        (3, 2, 8, 10), #sad
+                        (5, 4, 9, 10), #seeyouagain
+                        (9, 8, 7, 2), #shapeofyou
+                        (4, 7, 8, 4), #snowman
+                        (6, 5, 8, 8), #storyofmylife
+                        (8, 9, 9, 2), #sugar
+                        (10, 10, 6, 1), #uptownfunk
+                        (10, 10, 5, 1), #wakawaka
+                        (6, 5, 8, 9), #wedonttalkanymore
+                        (6, 4, 8, 9), #acele
+                        (8, 9, 7, 3), #byebyebye
+                        (7, 8, 9, 3), #caiverzipepereti
+                        (9, 9, 8, 2), #cumnenoi
+                        (7, 6, 8, 5), #diewithasmile
+                        (5, 7, 9, 8), #foreveryoung
+                        (6, 6, 8, 7), #ipotecat
+                        (9, 9, 6, 2), #mammamia
+                        (6, 7, 9, 5), #niciodatasanuspuiniciodata
+                        (8, 7, 6, 3), #notmyproblem
+                        (6, 6, 8, 7), #oarecare
+                        (5, 5, 8, 7), #oneofthegirls
+                        (8, 8, 7, 4), #sheknows
+                        (7, 7, 9, 5), #tu
+                        (5, 6, 9, 9); #ultimul dans
 
-UPDATE song SET mood_id = id where id between 1 and 22;
-UPDATE song set genre = 'Pop' where id in ( 3, 11, 12, 16);
-UPDATE  song set genre = 'R&B' where id in ( 1, 8, 13, 22);
-UPDATE song set genre = 'Hip-Hop' where id in ( 2, 6, 9, 10, 14, 20);
-UPDATE song set genre = 'Dance' where  id in (7, 15, 17, 18, 19);
-UPDATE song set genre = 'Rock' where  id = 4;
-UPDATE song set genre = 'Electronic' where id = 5;
+
+UPDATE song SET mood_id = id where id between 1 and 57;
+UPDATE song set genre = 'Pop' where id in ( 3, 11, 12, 16, 23, 24, 27, 28, 29, 31, 32, 33, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 49, 51, 53, 54, 55, 56, 57);
+UPDATE  song set genre = 'R&B' where id in ( 1, 8, 13, 22, 52, 54);
+UPDATE song set genre = 'Hip-Hop' where id in ( 2, 6, 9, 10, 14, 20, 25, 26, 34, 35, 55);
+UPDATE song set genre = 'Dance' where  id in (7, 15, 17, 18, 19, 50);
+UPDATE song set genre = 'Rock' where  id in (4, 48 );
+UPDATE song set genre = 'Electronic' where id in (5, 30);
 UPDATE song set genre = 'Reggae' where id = 21;
+UPDATE song set genre = 'Funk' where id = 40;
 
 
 
