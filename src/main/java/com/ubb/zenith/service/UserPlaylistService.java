@@ -10,8 +10,10 @@ import com.ubb.zenith.model.User;
 import com.ubb.zenith.model.UserPlaylist;
 import com.ubb.zenith.repository.MoodRepository;
 import com.ubb.zenith.repository.PlaylistRepository;
+import com.ubb.zenith.repository.SongRepository;
 import com.ubb.zenith.repository.UserPlaylistRepository;
 import com.ubb.zenith.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ public class UserPlaylistService {
 
     @Autowired
     private UserPlaylistRepository userPlaylistRepository;
+
+    @Autowired
+    private SongRepository songRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -48,27 +53,45 @@ public class UserPlaylistService {
      * @return the generated playlist.
      * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
      */
-    public UserPlaylist generatePlaylistForUser(String username, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException {
-        checkIfPlaylistAlreadyExists(playlistName);
+    @Transactional
+    public UserPlaylist generatePlaylistForUser(String username, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException, PlaylistNotFoundException {
+        // Verifică dacă playlistul există deja
+        if (checkIfPlaylistAlreadyExists(playlistName)) {
+           return null;
+        }
 
+        // Obține toate mood-urile și filtrează melodiile potrivite
         List<Mood> allMoods = moodRepository.findAll();
         List<Song> matchingSongs = allMoods.stream()
                 .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
                 .flatMap(mood -> mood.getSongs().stream())
                 .collect(Collectors.toList());
 
+//        if (matchingSongs.isEmpty()) {
+//            return new UserPlaylist();
+//        }
+
+        // Creează un nou playlist și îl salvează
         Playlist playlist = new Playlist();
         playlist.setName(playlistName);
-        playlist = playlistRepository.save(playlist);
+        playlist = playlistRepository.save(playlist);  // Salvează playlist-ul pentru a obține ID-ul acestuia
 
+        // Setează playlist-ul pentru fiecare melodie și salvează modificările pentru fiecare melodie
         Playlist finalPlaylist = playlist;
-        matchingSongs.forEach(song -> song.setPlaylist(finalPlaylist));
+        matchingSongs.forEach(song -> {
+            song.setPlaylist(finalPlaylist);
+            songRepository.save(song); // Salvează fiecare melodie după ce îi setezi playlist-ul
+        });
 
+        // Asociază melodiile cu playlist-ul și salvează playlist-ul din nou cu melodiile actualizate
         playlist.setSongs(matchingSongs);
+        playlistRepository.save(playlist); // Salvează din nou playlist-ul pentru a include melodiile asociate
 
+        // Obține utilizatorul care creează playlist-ul
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
+        // Creează un UserPlaylist și salvează-l în baza de date
         UserPlaylist userPlaylist = new UserPlaylist();
         userPlaylist.setPlaylist(playlist);
         userPlaylist.setUser(user);
@@ -84,10 +107,11 @@ public class UserPlaylistService {
      * @param name the name of the playlist to be checked.
      * @throws PlaylistAlreadyExistsException if the playlist already exists.
      */
-    public void checkIfPlaylistAlreadyExists(final String name) throws PlaylistAlreadyExistsException {
+    public boolean checkIfPlaylistAlreadyExists(final String name) throws PlaylistAlreadyExistsException {
         if (playlistRepository.findByName(name).isPresent()) {
-            throw new PlaylistAlreadyExistsException("Playlist already exists");
+            return true;
         }
+        return false;
     }
 
     /**
@@ -101,12 +125,22 @@ public class UserPlaylistService {
      * @return true if the mood matches the user's mood scores, false otherwise.
      */
     private boolean isMoodMatch(Mood mood, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore) {
-        // Define a threshold for matching (e.g., +/- 2 points)
+        // Ajustează punctajele de la chestionar pentru a se potrivi cu scala melodiilor
+        int adjustedHappiness = happinessScore * 2;
+        int adjustedSadness = sadnessScore * 2;
+        int adjustedLove = loveScore * 2;
+        int adjustedEnergy = energyScore * 2;
+
+        // Prag flexibil: crește dacă valorile sunt la extremități (ex. 1 sau 5 în chestionar)
+        //int threshold = (happinessScore == 1 || sadnessScore == 5 || loveScore == 1 || energyScore == 1) ? 3 : 2;
         int threshold = 2;
 
-        return Math.abs(mood.getHappiness_score() - happinessScore) <= threshold
-                && Math.abs(mood.getSadness_score() - sadnessScore) <= threshold
-                && Math.abs(mood.getLove_score() - loveScore) <= threshold
-                && Math.abs(mood.getEnergy_score() - energyScore) <= threshold;
+        // Comparăm scorurile ajustate cu scorurile melodiilor
+        return Math.abs(mood.getHappiness_score() - adjustedHappiness) <= threshold
+                && Math.abs(mood.getSadness_score() - adjustedSadness) <= threshold
+                && Math.abs(mood.getLove_score() - adjustedLove) <= threshold
+                && Math.abs(mood.getEnergy_score() - adjustedEnergy) <= threshold;
     }
+
+
 }

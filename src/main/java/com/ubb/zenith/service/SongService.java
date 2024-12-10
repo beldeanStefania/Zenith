@@ -123,6 +123,7 @@ public class SongService {
                     dto.setTitle(song.getTitle());
                     dto.setArtist(song.getArtist());
                     dto.setGenre(song.getGenre());
+                    dto.setMoodId(song.getMood().getId());
                     return dto;
                 })
                 .collect(Collectors.toList());

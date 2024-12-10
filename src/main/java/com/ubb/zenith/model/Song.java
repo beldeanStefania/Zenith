@@ -1,6 +1,7 @@
 package com.ubb.zenith.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -28,6 +29,7 @@ public class Song {
     private String genre;
 
     @Lob // Anotare pentru a specifica că acesta este un obiect mare
+    //@JsonIgnore
     private byte[] audioData; // Fișier audio stocat ca byte array
 
     @ManyToOne
@@ -36,7 +38,7 @@ public class Song {
     private Playlist playlist;
 
     @ManyToOne
-    @JoinColumn(name = "mood_id")
+    @JoinColumn(name = "mood_id", referencedColumnName = "id")
     @JsonBackReference
     private Mood mood;
 }

@@ -111,7 +111,7 @@ public class PlaylistService {
         Song song = songRepository.findById(songId)
                 .orElseThrow(() -> new SongNotFoundException("Song not found"));
 
-        checkSongInPlaylist(song);
+        //checkSongInPlaylist(song);
 
 
         playlist.getSongs().add(song);
@@ -155,6 +155,7 @@ public class PlaylistService {
     public List<Song> getSongsFromPlaylist(String playlistName) throws PlaylistNotFoundException {
         Playlist playlist = playlistRepository.findByName(playlistName)
                 .orElseThrow(() -> new PlaylistNotFoundException("Playlist not found"));
+        System.out.println("Songs in playlist: " + playlist.getSongs());
         return playlist.getSongs();
     }
 }
