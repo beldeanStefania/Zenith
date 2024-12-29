@@ -41,6 +41,7 @@ public class SecurityConfig {
                                 "/swagger-ui.html", "/webjars/**", "/v3/api-docs/swagger-config").permitAll()
                         .requestMatchers("/api/song/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // login-ul trebuie să fie deschis
+                        .requestMatchers("/api/spotify/callback").permitAll() // Permite accesul la callback
                         .requestMatchers("/api/userPlaylist/**").authenticated() // acum necesită autentificare
                         .anyRequest().permitAll()
                 )

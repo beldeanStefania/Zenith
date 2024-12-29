@@ -44,6 +44,23 @@ public class UserPlaylistController {
         return userPlaylistService.getAll();
     }
 
+    @PostMapping("/generateSpotifyPlaylist/{username}/{playlistName}")
+    public ResponseEntity<UserPlaylist> generateSpotifyPlaylist(@PathVariable String username, @PathVariable String playlistName, @RequestBody MoodDTO moodDTO) {
+        try {
+            UserPlaylist userPlaylist = userPlaylistService.generatePlaylistForUser(
+                    username,
+                    moodDTO.getHappiness_score(),
+                    moodDTO.getSadness_score(),
+                    moodDTO.getLove_score(),
+                    moodDTO.getEnergy_score(),
+                    playlistName
+            );
+            return ResponseEntity.ok(userPlaylist);
+        } catch (PlaylistAlreadyExistsException | UserNotFoundException e) {
+            return ResponseEntity.status(NOT_FOUND).build();
+        }
+    }
+
     @PostMapping("/generate/{username}/{playlistName}")
     public ResponseEntity<UserPlaylist> generatePlaylist(@PathVariable String username, @PathVariable String playlistName, @RequestBody MoodDTO moodDTO) {
         try {
@@ -59,8 +76,6 @@ public class UserPlaylistController {
             return ResponseEntity.ok(userPlaylist);
         } catch (PlaylistAlreadyExistsException | UserNotFoundException e) {
             return notFound().build();
-        } catch (PlaylistNotFoundException e) {
-            throw new RuntimeException(e);
         }
     }
 
