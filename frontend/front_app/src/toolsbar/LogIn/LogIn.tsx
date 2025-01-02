@@ -18,22 +18,24 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
     setLoginError(null);
 
     try {
-      // 1. Apelează endpoint-ul de login din backend
+      // Login request
       const response = await axios.post("http://localhost:8080/api/auth/login", {
         username,
         password,
       });
 
-      // 2. Răspunsul e un string = token JWT
       const token = response.data;
 
-      // 3. Verificăm să fie un string valid
       if (typeof token === "string" && token.startsWith("ey")) {
-        // 4. Salvează token și username în localStorage
         localStorage.setItem("token", token);
         localStorage.setItem("username", username);
 
-        // 5. Închide dialogul
+        // Redirect to Spotify authorization
+        const loginResponse = await axios.get(
+          `http://localhost:8080/api/spotify/login?username=${username}`
+        );
+        window.location.href = loginResponse.data; // Redirect to Spotify
+
         setShowlog(false);
       } else {
         setLoginError("Invalid response from server.");
@@ -52,7 +54,6 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
       overlayClassName="customOverlay"
       className="customModalLogIn"
     >
-      {/* Buton de închidere a modalei */}
       <button
         type="button"
         className="close"
@@ -65,9 +66,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
       <div className="login">
         <div className="form">
           <h1>Log In</h1>
-          {/* Formular de login */}
           <form onSubmit={handleSubmit}>
-            {/* Username field */}
             <label htmlFor="user" className="position">
               Username
             </label>
@@ -81,7 +80,6 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
               required
             />
 
-            {/* Password field */}
             <label htmlFor="password" className="position">
               Password
             </label>
@@ -95,17 +93,12 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
               required
             />
 
-            {/* Afișare eroare dacă e cazul */}
             {loginError && <p style={{ color: "red" }}>{loginError}</p>}
 
-            {/* Submit button */}
             <button type="submit" className="btn-login">
               Submit
             </button>
           </form>
-          <a href="#" className="forgot">
-            Forgot Password?
-          </a>
         </div>
       </div>
     </Modal>

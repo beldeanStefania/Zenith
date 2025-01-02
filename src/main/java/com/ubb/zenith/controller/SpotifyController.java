@@ -52,31 +52,29 @@ public class SpotifyController {
             @RequestParam String username,
             @RequestParam String code) {
         try {
-            // Verifică dacă utilizatorul există în baza de date
+            System.out.println("Authenticating user: " + username);
+
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
 
-            // Schimbă codul pentru token-uri utilizând Spotify API
             JSONObject tokens = spotifyAuthService.exchangeCodeForToken(code);
 
-            // Extrage token-urile din răspunsul Spotify
+            System.out.println("Received tokens: " + tokens.toString());
+
             String accessToken = tokens.getString("access_token");
-            String refreshToken = tokens.optString("refresh_token", null); // Refresh token-ul poate lipsi
+            String refreshToken = tokens.optString("refresh_token", null);
             int expiresIn = tokens.getInt("expires_in");
 
-            // Salvează token-urile în baza de date
-            spotifyAuthService.saveTokens(user, accessToken, refreshToken, expiresIn);
+            spotifyAuthService.saveTokens(username, accessToken, refreshToken, expiresIn);
+
+            System.out.println("Tokens saved successfully for user: " + username);
 
             return ResponseEntity.ok("User authenticated and tokens saved successfully!");
-        } catch (UserNotFoundException e) {
-            return ResponseEntity.status(404).body("User not found: " + e.getMessage());
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Error during authentication: " + e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Unexpected error: " + e.getMessage());
+            e.printStackTrace(); // Log the full stack trace for debugging
+            return ResponseEntity.status(500).body("Error during authentication: " + e.getMessage());
         }
     }
-
 
     // Endpoint pentru autentificare cu Spotify și stocarea token-urilor
     @GetMapping("/callback")
@@ -110,9 +108,10 @@ public class SpotifyController {
             @RequestParam int loveScore,
             @RequestParam String playlistName) {
         try {
+            // Obținem access token-ul pentru utilizator
             String accessToken = userService.getAccessToken(username);
 
-            // Normalizarea scorurilor de la 1-5 la 0-1
+            // Normalizarea scorurilor
             double normalizedHappiness = (happinessScore - 1) / 4.0;
             double normalizedEnergy = (energyScore - 1) / 4.0;
             double normalizedSadness = (sadnessScore - 1) / 4.0;
@@ -136,6 +135,7 @@ public class SpotifyController {
             return ResponseEntity.status(404).body("User not found: " + username);
         }
     }
+
 
 
 

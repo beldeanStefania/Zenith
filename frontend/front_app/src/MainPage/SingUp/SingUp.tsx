@@ -17,7 +17,6 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    // Input validation
     if (email !== confirmEmail) {
       setErrorMessage("Emails do not match.");
       return;
@@ -36,7 +35,13 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
 
       if (response.status === 200) {
         setSuccessMessage("Account created successfully. You can now log in.");
-        // Clear input fields
+
+        // Redirect to Spotify authorization
+        const loginResponse = await axios.get(
+          `http://localhost:8080/api/spotify/login?username=${username}`
+        );
+        window.location.href = loginResponse.data; // Redirect to Spotify
+
         setUsername("");
         setEmail("");
         setConfirmEmail("");
@@ -47,11 +52,11 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
       }
     } catch (error: any) {
       console.error("Error while signing up:", error);
-      if (error.response && error.response.status === 404) {
-        setErrorMessage("User with this username already exists.");
-      } else {
-        setErrorMessage("An unexpected error occurred. Please try again later.");
-      }
+      setErrorMessage(
+        error.response?.status === 409
+          ? "User with this username already exists."
+          : "An unexpected error occurred. Please try again later."
+      );
     }
   };
 
@@ -63,7 +68,7 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
       overlayClassName="customOverlay"
       className="customModalSingUp"
     >
-      <button 
+      <button
         type="button"
         className="close"
         aria-label="Close"
@@ -76,8 +81,9 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
         <div className="form">
           <h1>Sign Up</h1>
           <form onSubmit={handleSubmit}>
-            {/* Username Field */}
-            <label htmlFor="username" className="position">Username</label>
+            <label htmlFor="username" className="position">
+              Username
+            </label>
             <div className="form-group">
               <input
                 type="text"
@@ -90,8 +96,9 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
               />
             </div>
 
-            {/* Email Field */}
-            <label htmlFor="email" className="position">Email address</label>
+            <label htmlFor="email" className="position">
+              Email address
+            </label>
             <div className="form-group">
               <input
                 type="email"
@@ -113,8 +120,9 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
               />
             </div>
 
-            {/* Password Field */}
-            <label htmlFor="password" className="position">Password</label>
+            <label htmlFor="password" className="position">
+              Password
+            </label>
             <div className="form-group">
               <input
                 type="password"
@@ -141,7 +149,6 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
 
             <button type="submit" className="btn-singup">Sign Up</button>
           </form>
-          <a href="#" className="forgot">Already have an account? Sign In</a>
         </div>
       </div>
     </Modal>

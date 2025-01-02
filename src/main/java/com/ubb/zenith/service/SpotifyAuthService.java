@@ -65,6 +65,8 @@ public class SpotifyAuthService {
         String encodedScopes = URLEncoder.encode(scopes, StandardCharsets.UTF_8);
         String encodedRedirectUri = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8);
 
+        System.out.println("Using redirect_uri: " + redirectUri);
+
         return "https://accounts.spotify.com/authorize"
                 + "?client_id=" + clientId
                 + "&response_type=code"
@@ -72,6 +74,7 @@ public class SpotifyAuthService {
                 + "&scope=" + encodedScopes
                 + "&state=" + username;
     }
+
 
 
     public String refreshAccessToken(String refreshToken) throws IOException {
@@ -117,7 +120,9 @@ public class SpotifyAuthService {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                return new JSONObject(response.body().string());
+                String responseBody = response.body().string();
+                System.out.println("Token Response: " + responseBody);
+                return new JSONObject(responseBody);
             } else {
                 throw new IOException("Failed to exchange code: " + response.body().string());
             }
@@ -125,7 +130,11 @@ public class SpotifyAuthService {
     }
 
 
-    public void saveTokens(User user, String accessToken, String refreshToken, int expiresIn) {
+    public void saveTokens(String username, String accessToken, String refreshToken, int expiresIn) throws UserNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+
+        System.out.println("Saving tokens for user: " + username);
         user.setSpotifyAccessToken(accessToken);
         user.setSpotifyTokenExpiry(LocalDateTime.now().plusSeconds(expiresIn));
 
@@ -133,9 +142,10 @@ public class SpotifyAuthService {
             user.setSpotifyRefreshToken(refreshToken);
         }
 
-        // Salvează utilizatorul în baza de date
         userRepository.save(user);
+        System.out.println("Tokens saved to database.");
     }
+
 
 
 
