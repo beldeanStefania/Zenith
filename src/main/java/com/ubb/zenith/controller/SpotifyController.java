@@ -129,7 +129,7 @@ public class SpotifyController {
             String playlistId = spotifyApiService.createPlaylist(userId, playlistName, "Generated based on mood", true, accessToken);
             spotifyApiService.addTracksToPlaylist(playlistId, trackUris, accessToken);
 
-            return ResponseEntity.ok("Playlist created successfully! View it on Spotify: https://open.spotify.com/playlist/" + playlistId);
+            return ResponseEntity.ok("https://open.spotify.com/playlist/" + playlistId);
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         } catch (UserNotFoundException e) {
@@ -161,6 +161,11 @@ public class SpotifyController {
             // Obține token-ul de acces al utilizatorului
             String accessToken = userService.getAccessToken(username);
 
+            // Extrage doar ID-ul playlistului din URL (dacă este cazul)
+            if (playlistId.contains("https://open.spotify.com/playlist/")) {
+                playlistId = playlistId.substring(playlistId.lastIndexOf("/") + 1);
+            }
+
             // Obține lista de track-uri din playlist
             List<String> trackUris = spotifyApiService.getTracksFromPlaylist(playlistId, accessToken);
 
@@ -174,5 +179,6 @@ public class SpotifyController {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
+
 
 }

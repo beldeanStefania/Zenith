@@ -57,40 +57,47 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey }) => {
 
   // Funcție care trimite cererea de generare a playlist-ului către backend (Spotify)
   // După ce ai obținut răspunsul din backend, transmiți playlistLink la PlaylistModal
-  const handleGeneratePlaylist = async (answers) => {
+  interface MoodDTO {
+    happinessScore: number;
+    sadnessScore: number;
+    loveScore: number;
+    energyScore: number;
+  }
+
+  const handleGeneratePlaylist = async (answers: number[]): Promise<void> => {
     setLoading(true);
     setErrorMessage(null);
-  
+
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
-  
+
     if (!token || !username) {
       setErrorMessage("You must be logged in to generate a playlist.");
       setLoading(false);
       return;
     }
-  
+
     try {
       const generatedPlaylistName = `playlist_${username}_${generateShortId()}`;
       setPlaylistName(generatedPlaylistName);
-  
-      const moodDTO = {
+
+      const moodDTO: MoodDTO = {
         happinessScore: answers[0],
         sadnessScore: answers[1],
         loveScore: answers[2],
         energyScore: answers[3],
       };
-  
+
       const url = `http://localhost:8080/api/spotify/generate-playlist?username=${username}&playlistName=${generatedPlaylistName}&happinessScore=${moodDTO.happinessScore}&sadnessScore=${moodDTO.sadnessScore}&loveScore=${moodDTO.loveScore}&energyScore=${moodDTO.energyScore}`;
-  
-      const response = await axios.post(url, null, {
+
+      const response = await axios.post<string>(url, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       console.log("Playlist generated successfully:", response.data);
-  
+
       const playlistLink = response.data; // Asigură-te că este un string valid din răspunsul backend-ului
       setPlaylistLink(playlistLink); // Salvează link-ul
       setShowPlaylist(true); // Deschide modalul pentru playlist
@@ -102,6 +109,37 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey }) => {
       setLoading(false);
     }
   };
+
+  // Survey.tsx
+const handlePlayPlaylist = async () => {
+  setLoading(true);
+  const token = localStorage.getItem("token");
+  const username = localStorage.getItem("username");
+
+  if (!token || !username) {
+    setErrorMessage("You must be logged in to play a playlist.");
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const url = `http://localhost:8080/api/spotify/play-playlist?username=${username}&playlistId=${playlistLink}`;
+
+    // Trimiterea cererii pentru a reda playlist-ul
+    await axios.post(url, null, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    setLoading(false);
+  } catch (error) {
+    console.error("Error playing playlist:", error);
+    setErrorMessage("Failed to play playlist. Please try again.");
+    setLoading(false);
+  }
+};
+
   
   // Închide Survey-ul
   const handleCloseSurvey = () => {
