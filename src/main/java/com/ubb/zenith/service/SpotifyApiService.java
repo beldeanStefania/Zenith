@@ -4,8 +4,14 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -17,8 +23,10 @@ public class SpotifyApiService {
     private final OkHttpClient client = new OkHttpClient();
 
     // Caută melodii bazate pe un query
-    public List<String> searchTracks(String query, String accessToken) throws IOException {
-        String url = "https://api.spotify.com/v1/search?q=" + query + "&type=track&limit=10";
+    public List<String> searchTracks(String query, double valence, double energy, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/search?q=" + query +
+                "&type=track&limit=10&valence=" + valence +
+                "&energy=" + energy;
 
         Request request = new Request.Builder()
                 .url(url)
@@ -43,6 +51,7 @@ public class SpotifyApiService {
             return trackUris;
         }
     }
+
 
     // Adaugă melodii într-un playlist existent
     public void addTracksToPlaylist(String playlistId, List<String> trackUris, String accessToken) throws IOException {
@@ -109,19 +118,78 @@ public class SpotifyApiService {
         }
     }
 
-    // Generează un query bazat pe răspunsurile la întrebări
-    public String generateQueryBasedOnQuizAnswers(int question1, int question2, int question3, int question4) {
-        int happinessScore = (question1 + question2) / 2;
-        int energyScore = (question3 + question4) / 2;
+    public List<String> getTracksFromPlaylist(String playlistId, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
 
-        if (happinessScore > 7 && energyScore > 7) {
-            return "happy upbeat";
-        } else if (happinessScore > 7) {
-            return "happy calm";
-        } else if (energyScore > 7) {
-            return "energetic workout";
-        } else {
-            return "relaxing chill";
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+
+        JSONObject jsonResponse = new JSONObject(response.getBody());
+        JSONArray items = jsonResponse.getJSONArray("items");
+
+        List<String> trackUris = new ArrayList<>();
+        for (int i = 0; i < items.length(); i++) {
+            String trackUri = items.getJSONObject(i).getJSONObject("track").getString("uri");
+            trackUris.add(trackUri);
         }
+        return trackUris;
+    }
+
+    public void playTracks(List<String> trackUris, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/me/player/play";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", "Bearer " + accessToken);
+        headers.set("Content-Type", "application/json");
+
+        JSONObject body = new JSONObject();
+        body.put("uris", trackUris);
+
+        RestTemplate restTemplate = new RestTemplate();
+        HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
+        restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
+    }
+
+    public String getPlaylistDetails(String playlistId, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/playlists/" + playlistId;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to fetch playlist details: " + response.body().string());
+            }
+
+            // Returnează detaliile playlist-ului ca String JSON
+            return response.body().string();
+        }
+    }
+
+    public String generateQueryBasedOnMood(double happiness, double energy, double sadness, double love) {
+        StringBuilder query = new StringBuilder();
+
+        if (happiness > 0.7) {
+            query.append("happy ");
+        }
+        if (energy > 0.7) {
+            query.append("energetic ");
+        }
+        if (sadness > 0.7) {
+            query.append("sad ");
+        }
+        if (love > 0.7) {
+            query.append("romantic ");
+        }
+        if (query.length() == 0) {
+            query.append("relaxing chill "); // Default dacă niciun criteriu nu este dominant
+        }
+
+        return query.toString().trim();
     }
 }
