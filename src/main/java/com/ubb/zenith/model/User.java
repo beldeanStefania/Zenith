@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,6 +51,12 @@ public class User{
     @JoinColumn(name = "role_id", nullable = false)
     @JsonBackReference
     private Role role;
+
+    @Column(name = "spotify_access_token", length = 2048)
+    private String spotifyAccessToken;
+
+    private String spotifyRefreshToken;
+    private LocalDateTime spotifyTokenExpiry;
 
 
 }

@@ -1,24 +1,19 @@
 package com.ubb.zenith.service;
 
 import com.ubb.zenith.exception.PlaylistAlreadyExistsException;
-import com.ubb.zenith.exception.PlaylistNotFoundException;
 import com.ubb.zenith.exception.UserNotFoundException;
-import com.ubb.zenith.model.Mood;
 import com.ubb.zenith.model.Playlist;
-import com.ubb.zenith.model.Song;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.model.UserPlaylist;
-import com.ubb.zenith.repository.MoodRepository;
 import com.ubb.zenith.repository.PlaylistRepository;
-import com.ubb.zenith.repository.SongRepository;
 import com.ubb.zenith.repository.UserPlaylistRepository;
 import com.ubb.zenith.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class UserPlaylistService {
@@ -27,120 +22,136 @@ public class UserPlaylistService {
     private UserPlaylistRepository userPlaylistRepository;
 
     @Autowired
-    private SongRepository songRepository;
-
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private MoodRepository moodRepository;
 
     @Autowired
     private PlaylistRepository playlistRepository;
 
+    @Autowired
+    private SpotifyApiService spotifyApiService;
+
+    @Autowired
+    private UserService userService;
+
+    /**
+     * Retrieves all playlists for users.
+     *
+     * @return List of all user playlists.
+     */
     public List<UserPlaylist> getAll() {
         return userPlaylistRepository.findAll();
     }
 
     /**
-     * Generates a playlist based on the user's mood scores.
+     * Generates a playlist for a user based on their mood scores and saves it to Spotify.
      *
+     * @param username the username of the user.
      * @param happinessScore the happiness score of the user.
      * @param sadnessScore the sadness score of the user.
      * @param loveScore the love score of the user.
      * @param energyScore the energy score of the user.
-     * @param playlistName the name of the playlist to be generated.
-     * @return the generated playlist.
+     * @param playlistName the name of the playlist to be created.
+     * @return the created UserPlaylist object.
      * @throws PlaylistAlreadyExistsException if a playlist with the same name already exists.
+     * @throws UserNotFoundException if the user does not exist.
      */
-    @Transactional
-    public UserPlaylist generatePlaylistForUser(String username, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore, String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException, PlaylistNotFoundException {
-        // Verifică dacă playlistul există deja
-        if (checkIfPlaylistAlreadyExists(playlistName)) {
-           return null;
-        }
-
-        // Obține toate mood-urile și filtrează melodiile potrivite
-        List<Mood> allMoods = moodRepository.findAll();
-        List<Song> matchingSongs = allMoods.stream()
-                .filter(mood -> isMoodMatch(mood, happinessScore, sadnessScore, loveScore, energyScore))
-                .flatMap(mood -> mood.getSongs().stream())
-                .collect(Collectors.toList());
-
-//        if (matchingSongs.isEmpty()) {
-//            return new UserPlaylist();
+//    @Transactional
+//    public UserPlaylist generatePlaylistForUser(
+//            String username,
+//            Integer happinessScore,
+//            Integer sadnessScore,
+//            Integer loveScore,
+//            Integer energyScore,
+//            String playlistName) throws PlaylistAlreadyExistsException, UserNotFoundException {
+//
+//        // Check if playlist already exists
+//        if (checkIfPlaylistAlreadyExists(playlistName)) {
+//            throw new PlaylistAlreadyExistsException("Playlist with this name already exists.");
 //        }
-
-        // Creează un nou playlist și îl salvează
-        Playlist playlist = new Playlist();
-        playlist.setName(playlistName);
-        playlist = playlistRepository.save(playlist);  // Salvează playlist-ul pentru a obține ID-ul acestuia
-
-        // Setează playlist-ul pentru fiecare melodie și salvează modificările pentru fiecare melodie
-        Playlist finalPlaylist = playlist;
-        matchingSongs.forEach(song -> {
-            song.setPlaylist(finalPlaylist);
-            songRepository.save(song); // Salvează fiecare melodie după ce îi setezi playlist-ul
-        });
-
-        // Asociază melodiile cu playlist-ul și salvează playlist-ul din nou cu melodiile actualizate
-        playlist.setSongs(matchingSongs);
-        playlistRepository.save(playlist); // Salvează din nou playlist-ul pentru a include melodiile asociate
-
-        // Obține utilizatorul care creează playlist-ul
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-        // Creează un UserPlaylist și salvează-l în baza de date
-        UserPlaylist userPlaylist = new UserPlaylist();
-        userPlaylist.setPlaylist(playlist);
-        userPlaylist.setUser(user);
-        userPlaylist.setDate(java.time.LocalDate.now());
-
-        return userPlaylistRepository.save(userPlaylist);
-    }
+//
+//        try {
+//            // Get access token for Spotify API
+//            String accessToken = userService.getAccessToken(username);
+//
+//            // Generate search query based on mood scores
+//            String query = generateQueryBasedOnMood(happinessScore, sadnessScore, loveScore, energyScore);
+//
+//            // Search for tracks on Spotify
+//            List<String> trackUris = spotifyApiService.searchTracks(query, accessToken);
+//
+//            // Get Spotify user ID
+//            String userId = spotifyApiService.getCurrentUserId(accessToken);
+//
+//            // Create Spotify playlist and get the playlist ID
+//            String playlistId = spotifyApiService.createPlaylist(userId, playlistName, "Generated based on mood", false, accessToken);
+//
+//            // Add tracks to the created playlist
+//            spotifyApiService.addTracksToPlaylist(playlistId, trackUris, accessToken);
+//
+//            // Save playlist in database
+//            Playlist playlist = new Playlist();
+//            playlist.setName(playlistName);
+//            playlistRepository.save(playlist);
+//
+//            // Link playlist to the user
+//            User user = userRepository.findByUsername(username)
+//                    .orElseThrow(() -> new UserNotFoundException("User not found."));
+//
+//            UserPlaylist userPlaylist = new UserPlaylist();
+//            userPlaylist.setPlaylist(playlist);
+//            userPlaylist.setUser(user);
+//            userPlaylist.setDate(java.time.LocalDate.now());
+//
+//            return userPlaylistRepository.save(userPlaylist);
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException("Failed to interact with Spotify API", e);
+//        }
+//    }
 
 
     /**
-     * Checks if a playlist with a specific name exists in the repository.
+     * Checks if a playlist with the given name already exists.
      *
-     * @param name the name of the playlist to be checked.
-     * @throws PlaylistAlreadyExistsException if the playlist already exists.
+     * @param name the name of the playlist.
+     * @return true if a playlist with the given name exists, false otherwise.
      */
-    public boolean checkIfPlaylistAlreadyExists(final String name) throws PlaylistAlreadyExistsException {
-        if (playlistRepository.findByName(name).isPresent()) {
-            return true;
+    private boolean checkIfPlaylistAlreadyExists(String name) {
+        return playlistRepository.findByName(name).isPresent();
+    }
+
+    /**
+     * Generates a search query for Spotify based on mood scores.
+     *
+     * @param happinessScore the happiness score.
+     * @param energyScore the energy score.
+     * @return the generated search query.
+     */
+
+    private String generateQueryBasedOnMood(int happinessScore, int sadnessScore, int loveScore, int energyScore) {
+        if (happinessScore > 8 && energyScore > 8) {
+            return "happy upbeat";
+        } else if (sadnessScore > 7) {
+            return "sad emotional";
+        } else if (loveScore > 7) {
+            return "romantic ballad";
+        } else {
+            return "relaxing chill";
         }
-        return false;
     }
 
-    /**
-     * Checks if a mood matches the user's mood scores.
-     *
-     * @param mood the mood to be checked.
-     * @param happinessScore the happiness score of the user.
-     * @param sadnessScore the sadness score of the user.
-     * @param loveScore the love score of the user.
-     * @param energyScore the energy score of the user.
-     * @return true if the mood matches the user's mood scores, false otherwise.
-     */
-    private boolean isMoodMatch(Mood mood, Integer happinessScore, Integer sadnessScore, Integer loveScore, Integer energyScore) {
-        // Ajustează punctajele de la chestionar pentru a se potrivi cu scala melodiilor
-        int adjustedHappiness = happinessScore * 2;
-        int adjustedSadness = sadnessScore * 2;
-        int adjustedLove = loveScore * 2;
-        int adjustedEnergy = energyScore * 2;
-
-        // Prag flexibil: crește dacă valorile sunt la extremități (ex. 1 sau 5 în chestionar)
-        //int threshold = (happinessScore == 1 || sadnessScore == 5 || loveScore == 1 || energyScore == 1) ? 3 : 2;
-        int threshold = 2;
-
-        // Comparăm scorurile ajustate cu scorurile melodiilor
-        return Math.abs(mood.getHappiness_score() - adjustedHappiness) <= threshold
-                && Math.abs(mood.getSadness_score() - adjustedSadness) <= threshold
-                && Math.abs(mood.getLove_score() - adjustedLove) <= threshold
-                && Math.abs(mood.getEnergy_score() - adjustedEnergy) <= threshold;
-    }
-
+//    private String generateQueryBasedOnMood(int happinessScore, int sadnessScore, int loveScore, int energyScore) {
+//        if (happinessScore > 7 && energyScore > 7) {
+//            return "happy upbeat";
+//        } else if (sadnessScore > 7) {
+//            return "sad emotional";
+//        } else if (loveScore > 7) {
+//            return "romantic ballad";
+//        } else if (energyScore > 7) {
+//            return "energetic workout";
+//        } else {
+//            return "calm relaxing";
+//        }
+//    }
 
 }

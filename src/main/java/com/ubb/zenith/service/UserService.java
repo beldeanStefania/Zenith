@@ -1,160 +1,182 @@
 package com.ubb.zenith.service;
 
-import com.ubb.zenith.controller.AuthenticationRequest;
-import com.ubb.zenith.controller.AuthenticationResponse;
 import com.ubb.zenith.dto.UserDTO;
 import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
-//import com.ubb.zenith.model.MyUserDetails;
 import com.ubb.zenith.model.Role;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.repository.RoleRepository;
 import com.ubb.zenith.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService {
 
     @Autowired
     private UserRepository userRepository;
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
 
     @Autowired
-    public AuthenticationManager authenticationManager;
+    private SpotifyAuthService spotifyAuthService;
+
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
     private RoleRepository roleRepository;
 
-//    @Autowired
-//    private JwtService jwtService;
     /**
-     * Retrieves all users from the repository.
+     * Retrieve all users.
      *
-     * @return a list of all available users.
+     * @return a list of all users in the database.
      */
     public List<User> getAll() {
         return userRepository.findAll();
     }
 
     /**
-     * Adds a new user after verifying if a user with the same username already exists.
+     * Add a new user to the database.
      *
-     * @param userDTO DTO object that contains the information of the user to be added.
+     * @param userDTO the user data to be added.
      * @return the added user.
-     * @throws UserAlreadyExistsException if a user with the same username already exists.
+     * @throws UserAlreadyExistsException if the username already exists.
      */
-    public User add(final UserDTO userDTO) throws UserAlreadyExistsException {
-        checkIfUserAlreadyExists(userDTO.getUsername());
-        userDTO.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        var user = buildUser(userDTO);
-
-        return userRepository.save(user);
-        // var jwt = jwtService.generateToken(user);
-        //return AuthenticationResponse.builder().token(jwt).build();
-    }
-
-    /**
-     * Checks if a user with a specific username exists in the repository.
-     *
-     * @param username the username of the user to be checked.
-     * @throws UserAlreadyExistsException if the user already exists.
-     */
-    public void checkIfUserAlreadyExists(final String username) throws UserAlreadyExistsException {
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new UserAlreadyExistsException("User already exists");
+    public User add(UserDTO userDTO) throws UserAlreadyExistsException {
+        if (userRepository.findByUsername(userDTO.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException("User with this username already exists");
         }
-    }
 
-    /**
-     * Builds a user object from a user DTO.
-     *
-     * @param userDTO the DTO object to build the user from.
-     * @return the built user.
-     */
-    public User buildUser(final UserDTO userDTO) {
-        Role userRole = roleRepository.findByName("USER")
-                .orElseThrow(() -> new RuntimeException("Role USER not found in the database"));
+        Role role = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Role not found"));
 
-        var user = new User();
+        // Creează utilizatorul
+        User user = new User();
         user.setUsername(userDTO.getUsername());
-        user.setPassword(userDTO.getPassword());
         user.setEmail(userDTO.getEmail());
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         user.setAge(userDTO.getAge());
-        user.setRole(userRole);
+        user.setSpotifyAccessToken(null); // Initial, nu există token Spotify
+        user.setSpotifyRefreshToken(null); // Acesta poate fi setat ulterior, în cazul în care există
+        user.setSpotifyTokenExpiry(null);
+        user.setRole(role);
+
+        // Salvează utilizatorul în baza de date
+        user = userRepository.save(user);
+
+        // Verifică dacă există un refresh token existent
+        if (user.getSpotifyRefreshToken() != null) {
+            try {
+                // Încearcă să obții un access token folosind refresh token-ul existent
+                String newAccessToken = spotifyAuthService.refreshAccessToken(user.getSpotifyRefreshToken());
+
+                // Actualizează utilizatorul cu token-ul de acces și expirarea acestuia
+                user.setSpotifyAccessToken(newAccessToken);
+                user.setSpotifyTokenExpiry(LocalDateTime.now().plusSeconds(3600)); // Presupunem că token-ul expira într-o oră
+                userRepository.save(user);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to refresh Spotify access token", e);
+            }
+        }
+
         return user;
     }
 
-    /**
-     * Adds a new user to the repository.
-     *
-     * @param user the user to be added.
-     * @return the added user.
-     */
-    public User add(User user) {
-        return userRepository.save(user);
-    }
+
 
     /**
-     * Updates a user with the specified username.
+     * Update an existing user.
      *
-     * @param oldUsername the username of the user to be updated.
-     * @param userDTO the DTO object containing the new information for the user.
+     * @param username the username of the user to be updated.
+     * @param userDTO  the new user data.
      * @return the updated user.
-     * @throws UserNotFoundException if the user is not found.
+     * @throws UserNotFoundException if the user does not exist.
      */
-    public User update(final String oldUsername, final UserDTO userDTO) throws UserNotFoundException {
-        return updateUsername(findUser(oldUsername), userDTO);
-    }
+    public User update(String username, UserDTO userDTO) throws UserNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-    /**
-     * Finds a user by username.
-     *
-     * @param username the username of the user to be searched.
-     * @return the found user.
-     * @throws UserNotFoundException if no user with the specified username is found.
-     */
-    public User findUser(final String username) throws UserNotFoundException {
-        var modifiedUser = userRepository.findAll().stream()
-                .filter(user -> user.getUsername().equals(username)).findFirst().orElseThrow(() -> new UserNotFoundException("User not found"));
-        return modifiedUser;
-    }
-
-    /**
-     * Updates a user with the specified username.
-     *
-     * @param user the user to be updated.
-     * @param userDTO the DTO object containing the new information for the user.
-     * @return the updated user.
-     */
-    public User updateUsername(final User user, final UserDTO userDTO) {
-        user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
         user.setAge(userDTO.getAge());
+
         return userRepository.save(user);
     }
 
     /**
-     * Deletes a user from the repository based on its username.
+     * Delete a user from the database.
      *
-     * @param username the username of the user to delete.
-     * @throws UserNotFoundException if no user with the specified username is found.
+     * @param username the username of the user to be deleted.
+     * @throws UserNotFoundException if the user does not exist.
      */
-    public void delete(final String username) throws UserNotFoundException {
-        findUser(username);
-        userRepository.delete(findUser(username));
+    public void delete(String username) throws UserNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+        userRepository.delete(user);
     }
 
-//    public AuthenticationResponse login(AuthenticationRequest user) {
-//        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
-//        User user1 = userRepository.findByUsername(user.getUsername()).get();
-//        return AuthenticationResponse.builder().token(jwtService.generateToken(new MyUserDetails(user1))).build();
-//    }
+    /**
+     * Save Spotify tokens for a user.
+     *
+     * @param username     the username of the user.
+     * @param accessToken  the Spotify access token.
+     * @param refreshToken the Spotify refresh token.
+     * @param expiresIn    the token expiry time in seconds.
+     */
+    public void saveTokens(String username, String accessToken, String refreshToken, int expiresIn) throws UserNotFoundException {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        user.setSpotifyAccessToken(accessToken);
+        user.setSpotifyRefreshToken(refreshToken);
+        user.setSpotifyTokenExpiry(LocalDateTime.now().plusSeconds(expiresIn));
+
+        userRepository.save(user);
+    }
+
+    /**
+     * Get the Spotify access token for a user. Refresh it if it has expired.
+     *
+     * @param username the username of the user.
+     * @return the Spotify access token.
+     * @throws UserNotFoundException if the user does not exist.
+     */
+    // În UserService.java
+    public String getAccessToken(String username) throws UserNotFoundException {
+        // Căutăm utilizatorul în baza de date
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+
+        // Dacă refresh token-ul lipsește, utilizatorul trebuie să se autentifice din nou
+        if (user.getSpotifyRefreshToken() == null) {
+            throw new IllegalStateException("Refresh token is missing. User must authenticate with Spotify again.");
+        }
+
+        // În caz contrar, folosim refresh token-ul pentru a obține un nou access token
+        try {
+            // Înlocuim access token-ul folosind refresh token-ul
+            String accessToken = spotifyAuthService.refreshAccessToken(user.getSpotifyRefreshToken());
+
+            // Actualizăm utilizatorul cu noul access token
+            user.setSpotifyAccessToken(accessToken);
+
+            // Salvăm utilizatorul cu noul token
+            userRepository.save(user);
+
+            return accessToken; // Returnăm noul access token
+        } catch (IOException e) {
+            // În caz de eroare la obținerea access token-ului, aruncăm o excepție
+            throw new RuntimeException("Failed to refresh access token", e);
+        }
+    }
+
+
+
+    public User findByUsername(String username) throws UserNotFoundException {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
+    }
 }

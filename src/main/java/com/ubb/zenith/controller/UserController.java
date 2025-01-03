@@ -8,14 +8,7 @@ import com.ubb.zenith.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -52,7 +45,7 @@ public class UserController {
         try {
             return ok(userService.add(userDTO));
         } catch (UserAlreadyExistsException e) {
-            return notFound().build();
+            return ResponseEntity.status(409).body(null); // Conflict status code for existing user
         }
     }
 
@@ -68,7 +61,7 @@ public class UserController {
         try {
             return ok(userService.update(username, userDTO));
         } catch (UserNotFoundException e) {
-            return badRequest().build();
+            return notFound().build();
         }
     }
 
@@ -76,20 +69,50 @@ public class UserController {
      * Deletes a user entry from the repository.
      *
      * @param username the username of the user to be deleted.
-     * @return the deleted user.
+     * @return HTTP response indicating success or failure.
      */
     @DeleteMapping("/delete/{username}")
-    public ResponseEntity<User> delete(@PathVariable String username) {
+    public ResponseEntity<Void> delete(@PathVariable String username) {
         try {
             userService.delete(username);
-            return ok().build();
+            return ResponseEntity.noContent().build(); // No Content status code for successful deletion
         } catch (UserNotFoundException e) {
-            return badRequest().build();
+            return notFound().build();
         }
     }
 
-//    @PostMapping("/login")
-//    public AuthenticationResponse login(@RequestBody AuthenticationRequest user) {
-//        return userService.login(user);
-//    }
+    /**
+     * Saves Spotify tokens for a user after authentication.
+     *
+     * @param username      the username of the user.
+     * @param accessToken   the Spotify access token.
+     * @param refreshToken  the Spotify refresh token.
+     * @param expiresIn     the expiration time of the access token in seconds.
+     * @return HTTP response indicating success or failure.
+     */
+    @PostMapping("/saveSpotifyTokens/{username}")
+    public ResponseEntity<String> saveSpotifyTokens(
+            @PathVariable String username,
+            @RequestParam String accessToken,
+            @RequestParam String refreshToken,
+            @RequestParam int expiresIn) throws UserNotFoundException {
+        userService.saveTokens(username, accessToken, refreshToken, expiresIn);
+        return ok("Spotify tokens saved successfully for " + username);
+    }
+
+    /**
+     * Retrieves the Spotify access token for a user. Refreshes it if expired.
+     *
+     * @param username the username of the user.
+     * @return the Spotify access token.
+     */
+    @GetMapping("/getSpotifyAccessToken/{username}")
+    public ResponseEntity<String> getSpotifyAccessToken(@PathVariable String username) {
+        try {
+            String accessToken = userService.getAccessToken(username);
+            return ok(accessToken);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Failed to retrieve access token: " + e.getMessage());
+        }
+    }
 }

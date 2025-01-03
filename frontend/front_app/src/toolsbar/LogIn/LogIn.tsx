@@ -18,19 +18,27 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
     setLoginError(null);
 
     try {
+      // Login request
       const response = await axios.post("http://localhost:8080/api/auth/login", {
         username,
         password,
       });
 
-      const token = response.data;
-      if (typeof token === "string") {
+      const token = response.data; // Assuming token is returned correctly
+
+      if (typeof token === "string" && token.startsWith("ey")) { // Better to check for a proper JWT structure
         localStorage.setItem("token", token);
+        localStorage.setItem("username", username);
+
+        // Trigger Spotify login only after successful local login
+        const spotifyAuthResponse = await axios.get(`http://localhost:8080/api/spotify/login?username=${username}`);
+        window.location.href = spotifyAuthResponse.data; // Redirect to Spotify for authorization
+
         setShowlog(false);
       } else {
         setLoginError("Invalid response from server.");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
       setLoginError("Invalid username or password.");
     }
@@ -67,6 +75,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
               placeholder="Enter Username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              required
             />
 
             <label htmlFor="password" className="position">
@@ -79,17 +88,15 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              required
             />
 
             {loginError && <p style={{ color: "red" }}>{loginError}</p>}
 
             <button type="submit" className="btn-login">
-              Submit
+              Log In
             </button>
           </form>
-          <a href="#" className="forgot">
-            Forgot Password?
-          </a>
         </div>
       </div>
     </Modal>

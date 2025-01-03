@@ -1,85 +1,72 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 
+// PlaylistModal va primi piesele playlistului prin props
 interface PlaylistModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
   playlistName: string;
-}
-
-interface Song {
-  id: number;
-  title: string;
-  artist: string;
+  playlistLink: string; // Adăugăm link-ul pentru playlist
 }
 
 const PlaylistModal: React.FC<PlaylistModalProps> = ({
   isOpen,
   onRequestClose,
   playlistName,
+  playlistLink, // Link-ul pentru playlist
 }) => {
-  const [songs, setSongs] = useState<Song[]>([]);
-  const [currentAudio, setCurrentAudio] = useState<string | null>(null);
-  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
+  const [songs, setSongs] = useState<any[]>([]); // Piesele playlistului
+  const [loading, setLoading] = useState<boolean>(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mesaj de eroare
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mesaj de succes
 
-  // Când modalul e deschis și avem un playlistName, încărcăm melodiile
-  useEffect(() => {
-    if (isOpen && playlistName) {
-      fetchSongs();
+  // Funcție pentru a obține piesele playlistului
+  const fetchPlaylistSongs = async () => {
+    try {
+      const response = await axios.get(playlistLink); // Aici folosești link-ul care conține piesele
+      setSongs(response.data.tracks.items); // Presupunem că Spotify returnează piesele în acest format
+    } catch (error) {
+     console.error("Error fetching playlist songs:", error);
+      //setErrorMessage("Failed to load songs. Please try again.");
+    } finally {
+      setLoading(false);
     }
-  }, [isOpen, playlistName]);
+  };
 
-  // După ce se schimbă currentAudio, încercăm să redăm piesa
-  useEffect(() => {
-    if (audioPlayerRef.current && currentAudio) {
-      audioPlayerRef.current.play().catch((err) =>
-        console.error("Error playing the song:", err)
-      );
-    }
-  }, [currentAudio]);
-
-  const fetchSongs = async () => {
+  // Funcție de redare a playlistului
+  const handlePlay = async () => {
     const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("User not logged in, cannot fetch songs.");
+    const username = localStorage.getItem("username");
+
+    if (!token || !username) {
+      setErrorMessage("You must be logged in to play a playlist.");
       return;
     }
 
     try {
-      const response = await axios.get<Song[]>(
-        `http://localhost:8080/api/userPlaylist/getSongsFromPlaylist/${playlistName}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      console.log("Songs fetched:", response.data);
-      setSongs(response.data);
+      const url = `http://localhost:8080/api/spotify/play-playlist?username=${username}&playlistId=${playlistLink}`;
+
+      // Trimiterea cererii pentru a reda playlist-ul
+      await axios.post(url, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setSuccessMessage("Playlist is now playing!"); // Mesaj de succes
     } catch (error) {
-      console.error("Failed to fetch songs:", error);
+      //console.error("Error playing playlist:", error);
+      //setErrorMessage("Failed to play playlist. Please try again.");
     }
   };
 
-  const handlePlaySong = async (songId: number) => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("User not logged in, cannot play song.");
-      return;
+  // Folosește useEffect pentru a încărca piesele atunci când se deschide modalul
+  useEffect(() => {
+    if (isOpen) {
+      fetchPlaylistSongs(); // Căutăm piesele din playlist când modalul este deschis
     }
-
-    const audioUrl = `http://localhost:8080/api/userPlaylist/getAudio/${songId}`;
-    const response = await axios.get(audioUrl, {
-      headers: { Authorization: `Bearer ${token}` },
-      responseType: "arraybuffer",
-    });
-
-    const blob = new Blob([response.data], { type: "audio/mpeg" });
-    const blobUrl = URL.createObjectURL(blob);
-
-    setCurrentAudio(blobUrl);
-  };
+  }, [isOpen]);
 
   return (
     <Modal
@@ -89,30 +76,36 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       overlayClassName="customOverlay"
       className="customModal"
     >
-      <h2>Playlist: {playlistName}</h2>
+      <h2>{playlistName}</h2>
 
-      {songs.length === 0 ? (
-        <p>No songs available.</p>
+      {loading ? (
+        <p>Loading...</p>
       ) : (
-        <ul>
-          {songs.map((song) => (
-            <li key={song.id}>
-              {song.title} by {song.artist}
-              <button onClick={() => handlePlaySong(song.id)}>Play</button>
-            </li>
-          ))}
-        </ul>
+        <div>
+          <ul>
+            {songs.length > 0 ? (
+              songs.map((song, index) => (
+                <li key={index}>
+                  {song.track.name} by {song.track.artists[0].name}
+                  <audio controls>
+                    <source src={song.track.preview_url} />
+                  </audio>
+                </li>
+              ))
+            ) : (
+              <p></p>
+            )}
+          </ul>
+        </div>
       )}
 
-{currentAudio && (
-  <audio controls ref={audioPlayerRef} autoPlay key={currentAudio}>
-    <source src={currentAudio} type="audio/mpeg" />
-    Your browser does not support the audio tag.
-  </audio>
-)}
+      {/* Butoane de control */}
+      <div>
+        <button onClick={handlePlay}>Play Playlist</button>
+        <button onClick={onRequestClose}>Close</button>
+      </div>
 
-
-      <button onClick={onRequestClose}>Close</button>
+      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>} {/* Afișează mesajul de succes */}
     </Modal>
   );
 };
