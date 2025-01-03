@@ -24,23 +24,21 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
         password,
       });
 
-      const token = response.data;
+      const token = response.data; // Assuming token is returned correctly
 
-      if (typeof token === "string" && token.startsWith("ey")) {
+      if (typeof token === "string" && token.startsWith("ey")) { // Better to check for a proper JWT structure
         localStorage.setItem("token", token);
         localStorage.setItem("username", username);
 
-        // Redirect to Spotify authorization
-        const loginResponse = await axios.get(
-          `http://localhost:8080/api/spotify/login?username=${username}`
-        );
-        window.location.href = loginResponse.data; // Redirect to Spotify
+        // Trigger Spotify login only after successful local login
+        const spotifyAuthResponse = await axios.get(`http://localhost:8080/api/spotify/login?username=${username}`);
+        window.location.href = spotifyAuthResponse.data; // Redirect to Spotify for authorization
 
         setShowlog(false);
       } else {
         setLoginError("Invalid response from server.");
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Login error:", error);
       setLoginError("Invalid username or password.");
     }
@@ -96,7 +94,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
             {loginError && <p style={{ color: "red" }}>{loginError}</p>}
 
             <button type="submit" className="btn-login">
-              Submit
+              Log In
             </button>
           </form>
         </div>

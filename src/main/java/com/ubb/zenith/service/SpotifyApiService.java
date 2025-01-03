@@ -53,6 +53,26 @@ public class SpotifyApiService {
     }
 
 
+    public String getPlaylistDetails(String playlistId, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/playlists/" + playlistId;
+
+        Request request = new Request.Builder()
+                .url(url)
+                .get()
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new IOException("Failed to fetch playlist details: " + response.body().string());
+            }
+
+            // Return playlist details as a JSON string
+            return response.body().string();
+        }
+    }
+
+
     // Adaugă melodii într-un playlist existent
     public void addTracksToPlaylist(String playlistId, List<String> trackUris, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
@@ -120,40 +140,6 @@ public class SpotifyApiService {
 
     public List<String> getTracksFromPlaylist(String playlistId, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
-
-        JSONObject jsonResponse = new JSONObject(response.getBody());
-        JSONArray items = jsonResponse.getJSONArray("items");
-
-        List<String> trackUris = new ArrayList<>();
-        for (int i = 0; i < items.length(); i++) {
-            String trackUri = items.getJSONObject(i).getJSONObject("track").getString("uri");
-            trackUris.add(trackUri);
-        }
-        return trackUris;
-    }
-
-    public void playTracks(List<String> trackUris, String accessToken) throws IOException {
-        String url = "https://api.spotify.com/v1/me/player/play";
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + accessToken);
-        headers.set("Content-Type", "application/json");
-
-        JSONObject body = new JSONObject();
-        body.put("uris", trackUris);
-
-        RestTemplate restTemplate = new RestTemplate();
-        HttpEntity<String> entity = new HttpEntity<>(body.toString(), headers);
-        restTemplate.exchange(url, HttpMethod.PUT, entity, String.class);
-    }
-
-    public String getPlaylistDetails(String playlistId, String accessToken) throws IOException {
-        String url = "https://api.spotify.com/v1/playlists/" + playlistId;
 
         Request request = new Request.Builder()
                 .url(url)
@@ -163,13 +149,49 @@ public class SpotifyApiService {
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                throw new IOException("Failed to fetch playlist details: " + response.body().string());
+                throw new IOException("Failed to fetch playlist tracks: " + response.body().string());
             }
 
-            // Returnează detaliile playlist-ului ca String JSON
-            return response.body().string();
+            JSONObject jsonResponse = new JSONObject(response.body().string());
+            JSONArray items = jsonResponse.getJSONArray("items");
+
+            List<String> trackUris = new ArrayList<>();
+            for (int i = 0; i < items.length(); i++) {
+                String trackUri = items.getJSONObject(i).getJSONObject("track").getString("uri");
+                trackUris.add(trackUri);
+            }
+            return trackUris;
         }
     }
+
+
+    public void playTracks(List<String> trackUris, String accessToken) throws IOException {
+        String url = "https://api.spotify.com/v1/me/player/play";
+
+        JSONObject body = new JSONObject();
+        body.put("uris", trackUris);
+
+        Request request = new Request.Builder()
+                .url(url)
+                .put(RequestBody.create(body.toString(), okhttp3.MediaType.parse("application/json")))
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                String responseBody = response.body() != null ? response.body().string() : "";
+                JSONObject errorResponse = new JSONObject(responseBody);
+                String reason = errorResponse.optJSONObject("error").optString("reason", "");
+
+                if ("NO_ACTIVE_DEVICE".equalsIgnoreCase(reason)) {
+                    throw new IllegalStateException("No active Spotify device found. Start playback on any device and try again.");
+                } else {
+                    throw new IOException("Failed to play tracks: " + responseBody);
+                }
+            }
+        }
+    }
+
 
     public String generateQueryBasedOnMood(double happiness, double energy, double sadness, double love) {
         StringBuilder query = new StringBuilder();
