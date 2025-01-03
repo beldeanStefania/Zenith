@@ -18,7 +18,9 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
-
+/**
+ * Service for managing Spotify authorization and token-related operations.
+ */
 @Service
 public class SpotifyAuthService {
 
@@ -35,7 +37,12 @@ public class SpotifyAuthService {
     private UserRepository userRepository;
 
     private final OkHttpClient client = new OkHttpClient();
-
+    /**
+     * Retrieves a Spotify access token using the client credentials flow.
+     *
+     * @return the access token as a string.
+     * @throws IOException if the request to Spotify fails.
+     */
     public String getAccessToken() throws IOException {
         RequestBody formBody = new FormBody.Builder()
                 .add("grant_type", "client_credentials")
@@ -59,7 +66,12 @@ public class SpotifyAuthService {
             }
         }
     }
-
+    /**
+     * Generates a Spotify authorization URL for the user.
+     *
+     * @param username the username for state identification.
+     * @return the authorization URL as a string.
+     */
     public String getSpotifyAuthorizationUrl(String username) {
         String scopes = "playlist-modify-public playlist-modify-private user-modify-playback-state streaming user-read-playback-state";
         String encodedScopes = URLEncoder.encode(scopes, StandardCharsets.UTF_8);
@@ -75,7 +87,13 @@ public class SpotifyAuthService {
                 + "&state=" + username;
     }
 
-
+    /**
+     * Refreshes a Spotify access token using a refresh token.
+     *
+     * @param refreshToken the refresh token provided by Spotify.
+     * @return the new access token as a string.
+     * @throws IOException if the request to Spotify fails.
+     */
 
     public String refreshAccessToken(String refreshToken) throws IOException {
         RequestBody formBody = new FormBody.Builder()
@@ -101,7 +119,13 @@ public class SpotifyAuthService {
             }
         }
     }
-
+    /**
+     * Exchanges an authorization code for Spotify tokens.
+     *
+     * @param code the authorization code received from Spotify.
+     * @return a JSON object containing access and refresh tokens.
+     * @throws IOException if the request to Spotify fails.
+     */
     public JSONObject exchangeCodeForToken(String code) throws IOException {
         RequestBody formBody = new FormBody.Builder()
                 .add("grant_type", "authorization_code")
@@ -129,7 +153,15 @@ public class SpotifyAuthService {
         }
     }
 
-
+    /**
+     * Saves Spotify tokens for a user in the database.
+     *
+     * @param username     the username of the user.
+     * @param accessToken  the Spotify access token.
+     * @param refreshToken the Spotify refresh token.
+     * @param expiresIn    the token expiry time in seconds.
+     * @throws UserNotFoundException if the user does not exist.
+     */
     public void saveTokens(String username, String accessToken, String refreshToken, int expiresIn) throws UserNotFoundException {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + username));

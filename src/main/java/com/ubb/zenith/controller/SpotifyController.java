@@ -39,31 +39,44 @@ public class SpotifyController {
 
     @Autowired
     private UserService userService;
-
+    /**
+     * Endpoint to generate Spotify login URL.
+     * @param username The username of the user initiating login.
+     * @return URL to redirect the user for Spotify login.
+     */
     @GetMapping("/login")
     public ResponseEntity<String> loginToSpotify(@RequestParam String username) {
         String url = spotifyAuthService.getSpotifyAuthorizationUrl(username);
         return ResponseEntity.ok(url);
     }
 
-
+    /**
+     * Endpoint to handle authentication after login.
+     * @param username The username of the authenticated user.
+     * @param code The authorization code received from Spotify.
+     * @return Success or error message.
+     */
     @PostMapping("/authenticate")
     public ResponseEntity<String> authenticateWithSpotify(
             @RequestParam String username,
             @RequestParam String code) {
         try {
             System.out.println("Authenticating user: " + username);
+            // Retrieve user from database or throw an exception if not found.
 
             User user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new UserNotFoundException("User not found: " + username));
+            // Exchange authorization code for access and refresh tokens.
 
             JSONObject tokens = spotifyAuthService.exchangeCodeForToken(code);
 
             System.out.println("Received tokens: " + tokens.toString());
+            // Extract tokens and expiration details.
 
             String accessToken = tokens.getString("access_token");
             String refreshToken = tokens.optString("refresh_token", null);
             int expiresIn = tokens.getInt("expires_in");
+            // Save tokens in the database for the user.
 
             spotifyAuthService.saveTokens(username, accessToken, refreshToken, expiresIn);
 
@@ -76,18 +89,27 @@ public class SpotifyController {
         }
     }
 
-    // Endpoint pentru autentificare cu Spotify și stocarea token-urilor
-    @GetMapping("/callback")
+    /**
+     * Spotify callback handler to process the authorization code.
+     * @param code The authorization code from Spotify.
+     * @param state The username used as state during login.
+     * @return Success or error message.
+     */    @GetMapping("/callback")
     public ResponseEntity<String> handleCallback(@RequestParam String code, @RequestParam String state) {
         try {
             if (code == null || state == null) {
                 return ResponseEntity.badRequest().body("Missing required parameters.");
             }
+            // Extract the username from the state parameter.
+
             String username = state;
+            // Exchange the code for access and refresh tokens.
+
             var tokenResponse = spotifyAuthService.exchangeCodeForToken(code);
             String accessToken = tokenResponse.getString("access_token");
             String refreshToken = tokenResponse.getString("refresh_token");
             int expiresIn = tokenResponse.getInt("expires_in");
+            // Save the tokens for the user.
 
             userService.saveTokens(username, accessToken, refreshToken, expiresIn);
             return ResponseEntity.ok("Tokens saved successfully for " + username);
@@ -98,8 +120,17 @@ public class SpotifyController {
         }
     }
 
-    // Endpoint pentru generarea unui playlist bazat pe mood
-    @PostMapping("/generate-playlist")
+
+    /**
+     * Endpoint to generate a Spotify playlist based on mood scores.
+     * @param username The username of the user.
+     * @param happinessScore Score indicating the user's happiness.
+     * @param energyScore Score indicating the user's energy level.
+     * @param sadnessScore Score indicating the user's sadness.
+     * @param loveScore Score indicating the user's affection or love.
+     * @param playlistName The name for the new playlist.
+     * @return URL of the created playlist or an error message.
+     */    @PostMapping("/generate-playlist")
     public ResponseEntity<String> generatePlaylistFromMood(
             @RequestParam String username,
             @RequestParam int happinessScore,
@@ -108,22 +139,22 @@ public class SpotifyController {
             @RequestParam int loveScore,
             @RequestParam String playlistName) {
         try {
-            // Obținem access token-ul pentru utilizator
+            // Get the access token for the user.
             String accessToken = userService.getAccessToken(username);
 
-            // Normalizarea scorurilor
+            // Normalize mood scores to a range of 0.0 to 1.0.
             double normalizedHappiness = (happinessScore - 1) / 4.0;
             double normalizedEnergy = (energyScore - 1) / 4.0;
             double normalizedSadness = (sadnessScore - 1) / 4.0;
             double normalizedLove = (loveScore - 1) / 4.0;
 
-            // Generează query bazat pe mood
+            // Generate a Spotify query based on mood scores.
             String query = spotifyApiService.generateQueryBasedOnMood(normalizedHappiness, normalizedEnergy, normalizedSadness, normalizedLove);
 
-            // Caută track-uri relevante folosind filtrele normalizate
+            // Search for tracks that match the mood query.
             List<String> trackUris = spotifyApiService.searchTracks(query, normalizedHappiness, normalizedEnergy, accessToken);
 
-            // Creează playlist și adaugă track-uri
+            // Create a new playlist and add the tracks.
             String userId = spotifyApiService.getCurrentUserId(accessToken);
             String playlistId = spotifyApiService.createPlaylist(userId, playlistName, "Generated based on mood", true, accessToken);
             spotifyApiService.addTracksToPlaylist(playlistId, trackUris, accessToken);
@@ -139,11 +170,18 @@ public class SpotifyController {
 
 
 
-    // Endpoint pentru vizualizarea detaliilor unui playlist
-    @GetMapping("/view-playlist")
+    /**
+     * Endpoint to view details of a Spotify playlist.
+     * @param username The username of the user.
+     * @param playlistId The ID of the playlist.
+     * @return Playlist details in JSON format or an error message.
+     */    @GetMapping("/view-playlist")
     public ResponseEntity<String> viewPlaylist(@RequestParam String username, @RequestParam String playlistId) {
-        try {
+        try {            // Get the access token for the user.
+
             String accessToken = userService.getAccessToken(username);
+            // Fetch playlist details from Spotify API.
+
             String playlistDetails = spotifyApiService.getPlaylistDetails(playlistId, accessToken);
             return ResponseEntity.ok(playlistDetails);
         } catch (UserNotFoundException e) {
@@ -152,24 +190,29 @@ public class SpotifyController {
             return ResponseEntity.status(500).body("Error retrieving playlist details: " + e.getMessage());
         }
     }
-
+    /**
+     * Endpoint to play a Spotify playlist.
+     * @param username The username of the user.
+     * @param playlistId The ID or URL of the playlist to play.
+     * @return Success or error message.
+     */
     @PostMapping("/play-playlist")
     public ResponseEntity<String> playPlaylist(
             @RequestParam String username,
             @RequestParam String playlistId) {
         try {
-            // Obține token-ul de acces al utilizatorului
+            // Get the access token for the user.
             String accessToken = userService.getAccessToken(username);
 
-            // Extrage doar ID-ul playlistului din URL (dacă este cazul)
+            // Extract the playlist ID from the URL, if necessary.
             if (playlistId.contains("https://open.spotify.com/playlist/")) {
                 playlistId = playlistId.substring(playlistId.lastIndexOf("/") + 1);
             }
 
-            // Obține lista de track-uri din playlist
+            // Get the list of track URIs in the playlist.
             List<String> trackUris = spotifyApiService.getTracksFromPlaylist(playlistId, accessToken);
 
-            // Trimite cererea pentru redare către API-ul Spotify
+            // Send a request to Spotify API to play the tracks.
             spotifyApiService.playTracks(trackUris, accessToken);
 
             return ResponseEntity.ok("Playlist playback started successfully!");
