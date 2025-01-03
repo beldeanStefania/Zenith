@@ -22,10 +22,18 @@ public class LoginController {
 
     @Autowired
     private JwtUtil jwtUtil;
-
+    /**
+     * Endpoint for user login.
+     * Authenticates the user and returns a JWT token upon successful login.
+     *
+     * @param loginDTO The login credentials (username and password) provided by the user.
+     * @return A JWT token if authentication is successful, or an error message otherwise.
+     */
     @PostMapping("/login")
     public String login(@RequestBody LoginDTO loginDTO) {
         try {
+            // Create an authentication token using the provided username and password.
+
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginDTO.getUsername(),
@@ -33,10 +41,12 @@ public class LoginController {
                     )
             );
 
-            // Generează token-ul JWT pentru utilizatorul autentificat
+            // Generate a JWT token for the authenticated user.
             String token = jwtUtil.generateToken(loginDTO.getUsername());
             return token;
         } catch (AuthenticationException e) {
+            // Handle authentication failures and return an error message.
+
             return "Error: " + e.getMessage();
         }
     }

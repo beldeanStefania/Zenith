@@ -22,7 +22,16 @@ public class SpotifyApiService {
 
     private final OkHttpClient client = new OkHttpClient();
 
-    // Caută melodii bazate pe un query
+    /**
+     * Searches for tracks on Spotify based on the query, valence, and energy parameters.
+     *
+     * @param query      The search query (e.g., keywords or artist name).
+     * @param valence    The target valence (musical positiveness, scale: 0.0 to 1.0).
+     * @param energy     The target energy level (scale: 0.0 to 1.0).
+     * @param accessToken The Spotify API access token.
+     * @return A list of track URIs that match the search criteria.
+     * @throws IOException If the API request fails.
+     */
     public List<String> searchTracks(String query, double valence, double energy, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/search?q=" + query +
                 "&type=track&limit=10&valence=" + valence +
@@ -52,7 +61,14 @@ public class SpotifyApiService {
         }
     }
 
-
+    /**
+     * Fetches details of a specific playlist by its ID.
+     *
+     * @param playlistId The Spotify playlist ID.
+     * @param accessToken The Spotify API access token.
+     * @return The playlist details as a JSON string.
+     * @throws IOException If the API request fails.
+     */
     public String getPlaylistDetails(String playlistId, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/playlists/" + playlistId;
 
@@ -67,13 +83,18 @@ public class SpotifyApiService {
                 throw new IOException("Failed to fetch playlist details: " + response.body().string());
             }
 
-            // Return playlist details as a JSON string
             return response.body().string();
         }
     }
+    /**
+     * Adds tracks to an existing Spotify playlist.
+     *
+     * @param playlistId The Spotify playlist ID.
+     * @param trackUris  A list of track URIs to add to the playlist.
+     * @param accessToken The Spotify API access token.
+     * @throws IOException If the API request fails.
+     */
 
-
-    // Adaugă melodii într-un playlist existent
     public void addTracksToPlaylist(String playlistId, List<String> trackUris, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
 
@@ -92,8 +113,17 @@ public class SpotifyApiService {
             }
         }
     }
-
-    // Creează un nou playlist și returnează ID-ul acestuia
+    /**
+     * Creates a new playlist for a specified user.
+     *
+     * @param userId      The Spotify user ID.
+     * @param playlistName The name of the new playlist.
+     * @param description  The playlist description.
+     * @param isPublic     Whether the playlist should be public.
+     * @param accessToken  The Spotify API access token.
+     * @return The ID of the created playlist.
+     * @throws IOException If the API request fails.
+     */
     public String createPlaylist(String userId, String playlistName, String description, boolean isPublic, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/users/" + userId + "/playlists";
 
@@ -118,7 +148,13 @@ public class SpotifyApiService {
         }
     }
 
-    // Obține ID-ul utilizatorului curent
+    /**
+     * Retrieves the Spotify ID of the currently authenticated user.
+     *
+     * @param accessToken The Spotify API access token.
+     * @return The user ID.
+     * @throws IOException If the API request fails.
+     */
     public String getCurrentUserId(String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/me";
 
@@ -137,7 +173,14 @@ public class SpotifyApiService {
             return jsonResponse.getString("id");
         }
     }
-
+    /**
+     * Fetches all track URIs from a specific Spotify playlist.
+     *
+     * @param playlistId The Spotify playlist ID.
+     * @param accessToken The Spotify API access token.
+     * @return A list of track URIs in the playlist.
+     * @throws IOException If the API request fails.
+     */
     public List<String> getTracksFromPlaylist(String playlistId, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/playlists/" + playlistId + "/tracks";
 
@@ -164,7 +207,13 @@ public class SpotifyApiService {
         }
     }
 
-
+    /**
+     * Plays a list of Spotify tracks on the user's active device.
+     *
+     * @param trackUris   A list of track URIs to play.
+     * @param accessToken The Spotify API access token.
+     * @throws IOException If the API request fails.
+     */
     public void playTracks(List<String> trackUris, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/me/player/play";
 
@@ -191,7 +240,15 @@ public class SpotifyApiService {
             }
         }
     }
-
+    /**
+     * Generates a search query string based on mood parameters.
+     *
+     * @param happiness The level of happiness (scale: 0.0 to 1.0).
+     * @param energy    The level of energy (scale: 0.0 to 1.0).
+     * @param sadness   The level of sadness (scale: 0.0 to 1.0).
+     * @param love      The level of love (scale: 0.0 to 1.0).
+     * @return A string representing the generated query.
+     */
 
     public String generateQueryBasedOnMood(double happiness, double energy, double sadness, double love) {
         StringBuilder query = new StringBuilder();

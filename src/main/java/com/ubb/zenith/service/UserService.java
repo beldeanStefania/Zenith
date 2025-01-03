@@ -15,7 +15,10 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+/**
+ * Service class responsible for managing user-related operations.
+ * This class handles CRUD operations and additional logic for managing Spotify tokens.
+ */
 @Service
 public class UserService {
 
@@ -53,7 +56,7 @@ public class UserService {
 
         Role role = roleRepository.findByName("USER").orElseThrow(() -> new RuntimeException("Role not found"));
 
-        // Creează utilizatorul
+        // Create a new user
         User user = new User();
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
@@ -64,16 +67,16 @@ public class UserService {
         user.setSpotifyTokenExpiry(null);
         user.setRole(role);
 
-        // Salvează utilizatorul în baza de date
+        // Save the user in the database
         user = userRepository.save(user);
 
-        // Verifică dacă există un refresh token existent
+        // Check if a refresh token exists
         if (user.getSpotifyRefreshToken() != null) {
             try {
-                // Încearcă să obții un access token folosind refresh token-ul existent
+                // Attempt to obtain an access token using the existing refresh token
                 String newAccessToken = spotifyAuthService.refreshAccessToken(user.getSpotifyRefreshToken());
 
-                // Actualizează utilizatorul cu token-ul de acces și expirarea acestuia
+                // Update the user with the access token and its expiration time
                 user.setSpotifyAccessToken(newAccessToken);
                 user.setSpotifyTokenExpiry(LocalDateTime.now().plusSeconds(3600)); // Presupunem că token-ul expira într-o oră
                 userRepository.save(user);
@@ -144,31 +147,26 @@ public class UserService {
      * @return the Spotify access token.
      * @throws UserNotFoundException if the user does not exist.
      */
-    // În UserService.java
+
     public String getAccessToken(String username) throws UserNotFoundException {
-        // Căutăm utilizatorul în baza de date
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
-        // Dacă refresh token-ul lipsește, utilizatorul trebuie să se autentifice din nou
+
         if (user.getSpotifyRefreshToken() == null) {
             throw new IllegalStateException("Refresh token is missing. User must authenticate with Spotify again.");
         }
 
-        // În caz contrar, folosim refresh token-ul pentru a obține un nou access token
         try {
-            // Înlocuim access token-ul folosind refresh token-ul
             String accessToken = spotifyAuthService.refreshAccessToken(user.getSpotifyRefreshToken());
 
-            // Actualizăm utilizatorul cu noul access token
             user.setSpotifyAccessToken(accessToken);
 
-            // Salvăm utilizatorul cu noul token
             userRepository.save(user);
 
-            return accessToken; // Returnăm noul access token
+            return accessToken;
         } catch (IOException e) {
-            // În caz de eroare la obținerea access token-ului, aruncăm o excepție
             throw new RuntimeException("Failed to refresh access token", e);
         }
     }
