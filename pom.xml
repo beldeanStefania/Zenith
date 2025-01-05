@@ -5,8 +5,8 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>3.3.4</version>
-		<relativePath/> <!-- lookup parent from repository -->
+		<version>3.2.1</version>   <!-- Change from 3.3.4 to 3.2.1 -->
+		<relativePath/>
 	</parent>
 	<groupId>com.ubb</groupId>
 	<artifactId>zenith</artifactId>
@@ -130,6 +130,7 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>3.2.1</version>   <!-- Make sure this matches the parent version -->
 				<configuration>
 					<excludes>
 						<exclude>
