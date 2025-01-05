@@ -43,6 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll() // login-ul trebuie să fie deschis
                         .requestMatchers("/api/spotify/callback").permitAll() // Permite accesul la callback
                         .requestMatchers("/api/userPlaylist/**").authenticated() // acum necesită autentificare
+                        .requestMatchers("/api/playlists/**").authenticated() // acum necesită autentificare
                         .anyRequest().permitAll()
                 )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

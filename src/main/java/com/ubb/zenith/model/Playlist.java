@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.ALL;
@@ -22,16 +23,17 @@ public class Playlist {
     @GeneratedValue(strategy = IDENTITY)
     private Integer id;
 
-    @OneToMany(mappedBy = "playlist",cascade = ALL)
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     @JsonBackReference
-    private List<Song> songs;
-
-    @OneToMany(mappedBy = "playlist",cascade = ALL)
-    @JsonBackReference
-    private List<UserPlaylist> userPlaylists;
+    private User user;
 
     @NotBlank(message = "Playlist name cannot be empty")
-    @Size(min = 3, max = 20, message = "Playlist name must be between 3 and 20 characters")
+    @Size(min = 3, max = 50, message = "Playlist name must be between 3 and 20 characters")
     private String name;
+
+    private LocalDate createdAt;
+
+    private String spotifyPlaylistId;
 
 }
