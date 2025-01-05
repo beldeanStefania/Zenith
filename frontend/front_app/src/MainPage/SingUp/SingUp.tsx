@@ -11,6 +11,7 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [spotifyAuthUrl, setSpotifyAuthUrl] = useState<string | null>(null); // Stocăm URL-ul de autorizare Spotify
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,13 +35,13 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
       });
 
       if (response.status === 200) {
-        setSuccessMessage("Account created successfully. You can now log in.");
+        setSuccessMessage("Account created successfully. Please authorize Spotify.");
 
-        // Redirect to Spotify authorization
+        // Fetch Spotify authorization URL without redirecting
         const loginResponse = await axios.get(
           `http://localhost:8080/api/spotify/login?username=${username}`
         );
-        window.location.href = loginResponse.data; // Redirect to Spotify
+        setSpotifyAuthUrl(loginResponse.data); // Salvăm URL-ul pentru a fi utilizat într-un link
 
         setUsername("");
         setEmail("");
@@ -146,6 +147,7 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
 
             {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
             {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+            {spotifyAuthUrl && <a href={spotifyAuthUrl} target="_blank">Authorize Spotify</a>}  
 
             <button type="submit" className="btn-singup">Sign Up</button>
           </form>

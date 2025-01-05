@@ -12,6 +12,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [spotifyAuthUrl, setSpotifyAuthUrl] = useState<string | null>(null); // Stare pentru a stoca URL-ul de autentificare Spotify
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,7 +33,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
 
         // Trigger Spotify login only after successful local login
         const spotifyAuthResponse = await axios.get(`http://localhost:8080/api/spotify/login?username=${username}`);
-        window.location.href = spotifyAuthResponse.data; // Redirect to Spotify for authorization
+        setSpotifyAuthUrl(spotifyAuthResponse.data); // Store the URL in state instead of redirecting
 
         setShowlog(false);
       } else {
@@ -92,6 +93,7 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
             />
 
             {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+            {spotifyAuthUrl && <div><a href={spotifyAuthUrl} target="_blank">Continue to Spotify</a></div>} 
 
             <button type="submit" className="btn-login">
               Log In
