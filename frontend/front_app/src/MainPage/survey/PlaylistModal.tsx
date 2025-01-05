@@ -29,7 +29,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       setLoading(false);
     } catch (error) {
       console.error("Error fetching playlist songs:", error);
-      setErrorMessage("Failed to load songs. Please try again.");
+      //setErrorMessage("Failed to load songs. Please try again.");
       setLoading(false);
     }
   };
@@ -115,7 +115,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
                 </li>
               ))
             ) : (
-              <p>No songs available.</p>
+              <p></p>
             )}
           </ul>
         </div>
@@ -129,7 +129,6 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       </div>
 
       {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-      {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
     </Modal>
   );
 };

@@ -135,7 +135,7 @@ const handlePlayPlaylist = async () => {
     setLoading(false);
   } catch (error) {
     console.error("Error playing playlist:", error);
-    setErrorMessage("Failed to play playlist. Please try again.");
+    //setErrorMessage("Failed to play playlist. Please try again.");
     setLoading(false);
   }
 };
