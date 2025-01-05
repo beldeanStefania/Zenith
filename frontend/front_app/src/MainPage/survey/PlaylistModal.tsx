@@ -14,7 +14,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   isOpen,
   onRequestClose,
   playlistName,
-  playlistLink, // Link-ul pentru playlist
+  playlistLink,
 }) => {
   const [songs, setSongs] = useState<any[]>([]); // Piesele playlistului
   const [loading, setLoading] = useState<boolean>(true);
@@ -26,10 +26,10 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     try {
       const response = await axios.get(playlistLink); // Aici folosești link-ul care conține piesele
       setSongs(response.data.tracks.items); // Presupunem că Spotify returnează piesele în acest format
+      setLoading(false);
     } catch (error) {
-     console.error("Error fetching playlist songs:", error);
+      console.error("Error fetching playlist songs:", error);
       //setErrorMessage("Failed to load songs. Please try again.");
-    } finally {
       setLoading(false);
     }
   };
@@ -46,25 +46,47 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
 
     try {
       const url = `http://localhost:8080/api/spotify/play-playlist?username=${username}&playlistId=${playlistLink}`;
-
-      // Trimiterea cererii pentru a reda playlist-ul
       await axios.post(url, null, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      setSuccessMessage("Playlist is now playing!"); // Mesaj de succes
+      setSuccessMessage("Playlist is now playing!");
     } catch (error) {
-      //console.error("Error playing playlist:", error);
-      //setErrorMessage("Failed to play playlist. Please try again.");
+      console.error("Error playing playlist:", error);
+      setErrorMessage("Failed to play playlist. Please try again.");
     }
   };
+
+  // Funcție de salvare a playlistului
+  const handleSavePlaylist = async () => {
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username"); // asigură-te că acesta este salvat în localStorage sau gestionat corespunzător
+
+    if (!token || !username) {
+        setErrorMessage("You must be logged in to save a playlist.");
+        return;
+    }
+
+    try {
+        const url = `http://localhost:8080/api/playlists/add?username=${username}&name=${playlistName}&spotifyPlaylistId=${playlistLink}`;
+        await axios.post(url, {}, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        setSuccessMessage("Playlist saved successfully!");
+    } catch (error) {
+        console.error("Error saving playlist:", error);
+        setErrorMessage("Failed to save playlist. Please try again.");
+    }
+};
+
 
   // Folosește useEffect pentru a încărca piesele atunci când se deschide modalul
   useEffect(() => {
     if (isOpen) {
-      fetchPlaylistSongs(); // Căutăm piesele din playlist când modalul este deschis
+      fetchPlaylistSongs();
     }
   }, [isOpen]);
 
@@ -102,10 +124,11 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       {/* Butoane de control */}
       <div>
         <button onClick={handlePlay}>Play Playlist</button>
+        <button onClick={handleSavePlaylist}>Save Playlist</button> {/* Butonul de salvare */}
         <button onClick={onRequestClose}>Close</button>
       </div>
 
-      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>} {/* Afișează mesajul de succes */}
+      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
     </Modal>
   );
 };

@@ -43,14 +43,14 @@ public class User{
     @Min(value = 12, message = "You must be at least 12 years old")
     private Integer age;
 
-    @OneToMany(mappedBy = "user", cascade = ALL)
-    @JsonManagedReference
-    private List<UserPlaylist> userPlaylists;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     @JsonBackReference
     private Role role;
+
+    @OneToMany(mappedBy = "user", cascade = ALL)
+    @JsonManagedReference
+    private List<Playlist> playlists;
 
     @Column(name = "spotify_access_token", length = 2048)
     private String spotifyAccessToken;
