@@ -27,7 +27,7 @@
 }
 
 .form-user {
-  width: 15rem;
+  width: 30rem;
   height: 40px;
   padding: 0 10px;
   border: 1px solid var(--light-blue);
@@ -47,8 +47,12 @@
 }
 
 .form-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  margin-top: 10px;
+  height: 100%;
 }
 .form-control {
   width: 30rem;

@@ -8,6 +8,7 @@
 }
 
 .logo {
+  cursor: pointer;
   display: flex;
 }
 
@@ -22,6 +23,7 @@
   text-transform: uppercase;
   display: inline-block;
   margin: 0 0.5rem;
+  cursor: pointer;
 }
 .button h1 {
   background: var(--dark-gray);

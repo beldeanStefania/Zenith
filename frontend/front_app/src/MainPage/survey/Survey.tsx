@@ -13,15 +13,19 @@ const questions = [
   "How motivated do you feel to perform physical or mental tasks today?",
 ];
 
+let mood = "boo";
+
 // Funcție simplă pentru a genera un ID scurt
 const generateShortId = () => Math.random().toString(16).slice(2, 6);
 
 interface SurveyProps {
   show: boolean;
   setShowSurvey: (show: boolean) => void;
+  textButton : string;
+  styleButton: string;
 }
 
-const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey }) => {
+const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , styleButton }) => {
   // Indexul întrebării curente
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
@@ -96,6 +100,24 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey }) => {
         },
       });
 
+      let nrMood = 0;
+      if (moodDTO.happinessScore > nrMood) {
+        mood ="happy";
+        nrMood = moodDTO.happinessScore;
+      }
+      if (moodDTO.sadnessScore > nrMood) {
+        mood = "sad";
+        nrMood = moodDTO.sadnessScore;
+      }
+      if (moodDTO.loveScore > nrMood) {
+        mood = "love";
+        nrMood = moodDTO.loveScore;
+      }
+      if (moodDTO.energyScore > nrMood) {
+        mood = "energy";
+        nrMood = moodDTO.energyScore;
+      }
+
       console.log("Playlist generated successfully:", response.data);
 
       const playlistLink = response.data; // Asigură-te că este un string valid din răspunsul backend-ului
@@ -153,8 +175,8 @@ const handlePlayPlaylist = async () => {
 
   return (
     <>
-      <button onClick={() => setShowSurvey(true)} className="styleButton">
-        Try now
+      <button onClick={() => setShowSurvey(true)} className={styleButton}>
+        {textButton}
       </button>
 
       <ReactModal
@@ -175,15 +197,16 @@ const handlePlayPlaylist = async () => {
             <h2>Thank you for completing the survey!</h2>
             {loading && <p>Loading...</p>}
             {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
-
+            <div className="button-container">
             {!loading && !errorMessage && (
               <button className="create" onClick={() => setShowPlaylist(true)}>
                 View Playlist
               </button>
             )}
-            <button className="create" onClick={handleCloseSurvey}>
+            <button className="create-close" onClick={handleCloseSurvey}>
               Close Survey
             </button>
+            </div>
           </div>
         )}
       </ReactModal>
@@ -193,6 +216,7 @@ const handlePlayPlaylist = async () => {
         onRequestClose={() => setShowPlaylist(false)}
         playlistName={playlistName}
         playlistLink={playlistLink}
+        mood={mood}
       />
     </>
   );

@@ -32,6 +32,8 @@ public class Playlist {
     @Size(min = 3, max = 50, message = "Playlist name must be between 3 and 20 characters")
     private String name;
 
+    private String mood;
+
     private LocalDate createdAt;
 
     private String spotifyPlaylistId;

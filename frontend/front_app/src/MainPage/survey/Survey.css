@@ -76,15 +76,35 @@ h2 {
 
 .create {
   background: var(--shadow-slider);
-  display: block;
   padding: 1rem 2rem;
   position: relative;
   text-transform: uppercase;
   display: inline-block;
   margin: 0 0.5rem;
-  color: white;
+  color: var(--dark-gray);
   border-radius: 0.5rem;
   cursor: pointer;
-  left: 50%;
-  transform: translateX(-50%);
+}
+.create:hover {
+  background: var(--shadow-slider-hover);
+}
+
+.create-close {
+  background: var(--dark-gray);
+  padding: 1rem 2rem;
+  position: relative;
+  text-transform: uppercase;
+  display: inline-block;
+  margin: 0 0.5rem;
+  color: var(--light-gray);
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.create-close:hover {
+  background: var(--red);
+}
+
+.button-container {
+  margin-top: 1rem;
 }

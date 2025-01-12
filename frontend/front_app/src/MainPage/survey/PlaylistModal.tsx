@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
-import Modal from "react-modal";
 import axios from "axios";
+import ViewPlaylist from "./ViewPlaylist";
 
 // PlaylistModal va primi piesele playlistului prin props
 interface PlaylistModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
   playlistName: string;
+  mood: string; // Adăugăm mood-ul playlistului
   playlistLink: string; // Adăugăm link-ul pentru playlist
 }
 
@@ -15,6 +16,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   onRequestClose,
   playlistName,
   playlistLink,
+  mood,
 }) => {
   const [songs, setSongs] = useState<any[]>([]); // Piesele playlistului
   const [loading, setLoading] = useState<boolean>(true);
@@ -69,13 +71,16 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
 
     try {
-        const url = `http://localhost:8080/api/playlists/add?username=${username}&name=${playlistName}&spotifyPlaylistId=${playlistLink}`;
+        const url = `http://localhost:8080/api/playlists/add?username=${username}&name=${playlistName}&mood=${mood}&spotifyPlaylistId=${playlistLink}`;
         await axios.post(url, {}, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
         setSuccessMessage("Playlist saved successfully!");
+        if (window.location.pathname === "/profile") {
+          window.location.reload();
+        }
     } catch (error) {
         console.error("Error saving playlist:", error);
         setErrorMessage("Failed to save playlist. Please try again.");
@@ -91,45 +96,16 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   }, [isOpen]);
 
   return (
-    <Modal
+    <ViewPlaylist
       isOpen={isOpen}
       onRequestClose={onRequestClose}
-      contentLabel="Playlist Modal"
-      overlayClassName="customOverlay"
-      className="customModal"
-    >
-      <h2>{playlistName}</h2>
-
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div>
-          <ul>
-            {songs.length > 0 ? (
-              songs.map((song, index) => (
-                <li key={index}>
-                  {song.track.name} by {song.track.artists[0].name}
-                  <audio controls>
-                    <source src={song.track.preview_url} />
-                  </audio>
-                </li>
-              ))
-            ) : (
-              <p></p>
-            )}
-          </ul>
-        </div>
-      )}
-
-      {/* Butoane de control */}
-      <div>
-        <button onClick={handlePlay}>Play Playlist</button>
-        <button onClick={handleSavePlaylist}>Save Playlist</button> {/* Butonul de salvare */}
-        <button onClick={onRequestClose}>Close</button>
-      </div>
-
-      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
-    </Modal>
+      playlistName={playlistName}
+      songs={songs}
+      loading={loading}
+      handlePlay={handlePlay}
+      handleSavePlaylist={handleSavePlaylist}
+      successMessage={successMessage} 
+    />
   );
 };
 
