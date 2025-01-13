@@ -8,7 +8,6 @@ import { EffectCoverflow, Pagination, Autoplay } from "swiper/modules";
 
 import Survey from "./survey/Survey";
 import content from "./content";
-import Subwoofer from "./subwoofer/Subwoofer";
 import "./SlideShower.css";
 import SingIn from "./SingUp/SingUp";
 
@@ -48,11 +47,9 @@ const SliderShower = ({
               <div className="info">
                 {(index === 0 || index === 5) && (
                   <>
-                    <div className="sub">
-                      <Subwoofer />
-                    </div>
+                    <img src={img} className="img1" />
                     <div className="survey">
-                      <Survey show={show} setShowSurvey={setShowSurvey} />
+                      <Survey show={show} setShowSurvey={setShowSurvey} textButton={"Try now"}  styleButton="styleButton" />
                     </div>
                     <div className="text">
                       <p>{text}</p>
@@ -79,9 +76,12 @@ const SliderShower = ({
                   </>
                 )}
                 {index > 1 && (index < 5 || index > 6) && (
+                  <>
                   <div className="text">
                     <p>{text}</p>
                   </div>
+                  <img src={img} className="img1" />
+                  </>
                 )}
               </div>
             </div>

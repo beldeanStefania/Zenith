@@ -20,22 +20,29 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
 
     try {
       // Login request
-      const response = await axios.post("http://localhost:8080/api/auth/login", {
-        username,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/auth/login",
+        {
+          username,
+          password,
+        }
+      );
 
       const token = response.data; // Assuming token is returned correctly
 
-      if (typeof token === "string" && token.startsWith("ey")) { // Better to check for a proper JWT structure
+      if (typeof token === "string" && token.startsWith("ey")) {
+        // Better to check for a proper JWT structure
         localStorage.setItem("token", token);
         localStorage.setItem("username", username);
 
         // Trigger Spotify login only after successful local login
-        const spotifyAuthResponse = await axios.get(`http://localhost:8080/api/spotify/login?username=${username}`);
+        const spotifyAuthResponse = await axios.get(
+          `http://localhost:8080/api/spotify/login?username=${username}`
+        );
         setSpotifyAuthUrl(spotifyAuthResponse.data); // Store the URL in state instead of redirecting
 
         setShowlog(false);
+        window.location.reload();
       } else {
         setLoginError("Invalid response from server.");
       }
@@ -65,40 +72,48 @@ const LogIn: React.FC<LogInProps> = ({ showlog, setShowlog }) => {
       <div className="login">
         <div className="form">
           <h1>Log In</h1>
-          <form onSubmit={handleSubmit}>
-            <label htmlFor="user" className="position">
-              Username
-            </label>
-            <input
-              type="text"
-              className="form-user-login"
-              id="user"
-              placeholder="Enter Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+          <div className="line">
+            <form onSubmit={handleSubmit}>
+              <label htmlFor="user" className="position">
+                Username
+              </label>
+              <input
+                type="text"
+                className="form-user-login"
+                id="user"
+                placeholder="Enter Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
 
-            <label htmlFor="password" className="position">
-              Password
-            </label>
-            <input
-              type="password"
-              className="form-control-login"
-              id="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+              <label htmlFor="password" className="position">
+                Password
+              </label>
+              <input
+                type="password"
+                className="form-control-login"
+                id="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
-            {loginError && <p style={{ color: "red" }}>{loginError}</p>}
-            {spotifyAuthUrl && <div><a href={spotifyAuthUrl} target="_blank">Continue to Spotify</a></div>} 
+              {loginError && <p style={{ color: "red" }}>{loginError}</p>}
+              {spotifyAuthUrl && (
+                <div>
+                  <a href={spotifyAuthUrl} target="_blank">
+                    Continue to Spotify
+                  </a>
+                </div>
+              )}
 
-            <button type="submit" className="btn-login">
-              Log In
-            </button>
-          </form>
+              <button type="submit" className="btn-login">
+                Log In
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </Modal>

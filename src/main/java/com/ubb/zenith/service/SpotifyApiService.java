@@ -15,6 +15,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -124,7 +126,7 @@ public class SpotifyApiService {
      * @return The ID of the created playlist.
      * @throws IOException If the API request fails.
      */
-    public String createPlaylist(String userId, String playlistName, String description, boolean isPublic, String accessToken) throws IOException {
+    public String createPlaylist(String userId, String playlistName,  String description,  boolean isPublic, String accessToken) throws IOException {
         String url = "https://api.spotify.com/v1/users/" + userId + "/playlists";
 
         JSONObject requestBody = new JSONObject();
@@ -250,23 +252,32 @@ public class SpotifyApiService {
      * @return A string representing the generated query.
      */
 
-    public String generateQueryBasedOnMood(double happiness, double energy, double sadness, double love) {
+     public String generateQueryBasedOnMood(double happiness, double energy, double sadness, double love) {
         StringBuilder query = new StringBuilder();
+        List<String> keywords = new ArrayList<>();
 
         if (happiness > 0.7) {
-            query.append("happy ");
+            keywords.addAll(Arrays.asList("happy", "joyful", "uplifting", "positive", "cheerful", "fun"));
         }
         if (energy > 0.7) {
-            query.append("energetic ");
+            keywords.addAll(Arrays.asList("energetic", "powerful", "fast", "intense", "exciting", "dynamic"));
         }
         if (sadness > 0.7) {
-            query.append("sad ");
+            keywords.addAll(Arrays.asList("sad", "melancholic", "slow", "emotional", "sentimental", "nostalgic"));
         }
         if (love > 0.7) {
-            query.append("romantic ");
+            keywords.addAll(Arrays.asList("romantic", "loving", "tender", "passionate", "lustful", "sexy"));
         }
-        if (query.length() == 0) {
-            query.append("relaxing chill "); // Default dacă niciun criteriu nu este dominant
+        if (keywords.isEmpty()) {
+            keywords.add("chill");
+            keywords.add("relaxing");
+        }
+
+        // Randomly select keywords to avoid repetitive queries
+        Collections.shuffle(keywords);
+        keywords = keywords.subList(0, Math.min(2, keywords.size())); // Select up to 2 keywords
+        for (String keyword : keywords) {
+            query.append(keyword).append(" ");
         }
 
         return query.toString().trim();

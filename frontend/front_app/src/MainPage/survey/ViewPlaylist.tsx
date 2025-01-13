@@ -1,52 +1,82 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import Modal from "react-modal";
+import PlaylistTracks from "./PlaylistTracks";
 
-interface ViewPlaylistsProps {
-    username: string;
+interface ViewPlaylistProps {
+  isOpen: boolean;
+  onRequestClose: () => void;
+  playlistName: string;
+  songs: {
+    track: { name: string; artists: { name: string }[]; preview_url: string };
+  }[];
+  loading: boolean;
+  handlePlay: () => void;
+  handleSavePlaylist: () => void;
+  successMessage: string | null;
+  username: string;
+  playlistId: number | null;
 }
 
-const ViewPlaylists: React.FC<ViewPlaylistsProps> = ({ username }) => {
-    interface Playlist {
-        id: string;
-        name: string;
-    }
+const ViewPlaylist: React.FC<ViewPlaylistProps> = ({
+  isOpen,
+  onRequestClose,
+  playlistName,
+  songs,
+  loading,
+  handlePlay,
+  handleSavePlaylist,
+  successMessage,
+  username,
+  playlistId,
+}) => {
+  return (
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={onRequestClose}
+      contentLabel="Playlist Modal"
+      overlayClassName="customOverlay"
+      className="customModal"
+    >
+      <h2>{playlistName}</h2>
 
-    const [playlists, setPlaylists] = useState<Playlist[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        const fetchPlaylists = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8080/api/playlists/user/${username}`, {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem('token')}`
-                    }
-                });
-                setPlaylists(response.data);
-                setLoading(false);
-            } catch (err) {
-                setError('Failed to fetch playlists');
-                setLoading(false);
-            }
-        };
-
-        fetchPlaylists();
-    }, [username]);
-
-    if (loading) return (<p>Loading...</p>);
-    if (error) return <p>{error}</p>;
-
-    return (
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
         <div>
-            <h2>{username}'s Playlists</h2>
-            <ul>
-                {playlists.map(playlist => (
-                    <li key={playlist.id}>{playlist.name}</li>
-                ))}
-            </ul>
+          <ul>
+            {songs.length > 0 ? (
+              songs.map((song, index) => (
+                <li key={index}>
+                  {song.track.name} by {song.track.artists[0].name}
+                  <audio controls>
+                    <source src={song.track.preview_url} />
+                  </audio>
+                </li>
+              ))
+            ) : (
+              <p></p>
+            )}
+          </ul>
         </div>
-    );
+      )}
+
+      <PlaylistTracks username={username} playlistId={playlistId} />
+
+      {/* Butoane de control */}
+      <div className="button-container">
+        <button className="create" onClick={handlePlay}>
+          Play Playlist
+        </button>
+        <button className="create" onClick={handleSavePlaylist}>
+          Save Playlist
+        </button>
+        <button className="create-close" onClick={onRequestClose}>
+          Close
+        </button>
+      </div>
+
+      {successMessage && <p style={{ color: "green" }}>{successMessage}</p>}
+    </Modal>
+  );
 };
 
-export default ViewPlaylists;
+export default ViewPlaylist;

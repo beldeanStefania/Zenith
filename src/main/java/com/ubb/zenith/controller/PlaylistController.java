@@ -32,13 +32,14 @@ public class PlaylistController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Playlist> addPlaylist(@RequestParam String username, @RequestParam String name, @RequestParam String spotifyPlaylistId) {
+    public ResponseEntity<Playlist> addPlaylist(@RequestParam String username, @RequestParam String name, @RequestParam String mood,  @RequestParam String spotifyPlaylistId) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
 
         Playlist playlist = new Playlist();
         playlist.setUser(user);
         playlist.setName(name);
+        playlist.setMood(mood);
         playlist.setCreatedAt(LocalDate.now());
         playlist.setSpotifyPlaylistId(spotifyPlaylistId);
 
@@ -71,8 +72,8 @@ public class PlaylistController {
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<Playlist> updatePlaylist(@PathVariable Integer id, @RequestParam String name, @RequestParam String spotifyPlaylistId) {
-        Playlist updatedPlaylist = playlistService.updatePlaylist(id, name, spotifyPlaylistId);
+    public ResponseEntity<Playlist> updatePlaylist(@PathVariable Integer id, @RequestParam String name, @RequestParam String mood, @RequestParam String spotifyPlaylistId) {
+        Playlist updatedPlaylist = playlistService.updatePlaylist(id, name, mood, spotifyPlaylistId);
         return ResponseEntity.ok(updatedPlaylist);
     }
 

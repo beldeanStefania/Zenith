@@ -20,13 +20,14 @@ public class PlaylistService {
     @Autowired
     private UserRepository userRepository;
 
-    public Playlist savePlaylist(Integer userId, String name, String spotifyPlaylistId) {
+    public Playlist savePlaylist(Integer userId, String name, String mood,  String spotifyPlaylistId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
         Playlist playlist = new Playlist();
         playlist.setUser(user);
         playlist.setName(name);
+        playlist.setMood(mood);
         playlist.setCreatedAt(LocalDate.now());
         playlist.setSpotifyPlaylistId(spotifyPlaylistId);
 
@@ -47,10 +48,11 @@ public class PlaylistService {
     }
 
     @Transactional
-    public Playlist updatePlaylist(Integer id, String newName, String newSpotifyPlaylistId) {
+    public Playlist updatePlaylist(Integer id, String newName, String newMood,  String newSpotifyPlaylistId) {
         Playlist playlist = playlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Playlist not found with id: " + id));
         playlist.setName(newName);
+        playlist.setMood(newMood);
         playlist.setSpotifyPlaylistId(newSpotifyPlaylistId);
         return playlist;
     }
