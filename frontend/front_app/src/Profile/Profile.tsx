@@ -36,10 +36,16 @@ const Profile = () => {
   const [show, setShowSurvey] = useState(false);
   const [profileData, setProfileData] = useState({
     username: localStorage.getItem("username") || "Username",
-    bio: "",
-    favoriteGenres: ["Rock", "Jazz", "Electronic"],
+    bio: localStorage.getItem("bio") || "",
+    favoriteGenres: JSON.parse(
+      localStorage.getItem("favoriteGenres") || '["Rock", "Jazz", "Electronic"]'
+    ),
   });
   const token = localStorage.getItem("token");
+  const [newGenre, setNewGenre] = useState("");
+  const [tempGenres, setTempGenres] = useState(profileData.favoriteGenres);
+  const [isAddingGenre, setIsAddingGenre] = useState(false);
+
   interface Playlist {
     id: number;
     name: string;
@@ -53,10 +59,27 @@ const Profile = () => {
   const [namePlaylists, setNamePlaylists] = useState("");
   const [idPlaylist, setIdPLaylist] = useState<number | null>(null);
   const [playlistSpotifyLink, setPlaylistSpotifyLink] = useState("");
+  const [bio, setBio] = useState(profileData.bio);
+
+  const debounce = (func: Function, delay: number) => {
+    let timeout: NodeJS.Timeout;
+    return (...args: any[]) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
 
   const handleSave = () => {
+    setIsAddingGenre(false);
     setIsModalOpen(false);
+    localStorage.setItem("bio", bio);
+    localStorage.setItem("favoriteGenres", JSON.stringify(tempGenres));
+    setProfileData({ ...profileData, bio, favoriteGenres: tempGenres });
   };
+
+  const handleDebouncedSave = debounce(() => {
+    localStorage.setItem("bio", bio);
+  }, 1000);
 
   const fetchPlaylists = async () => {
     try {
@@ -70,6 +93,27 @@ const Profile = () => {
     } catch (error) {
       console.error("Error fetching playlists:", error);
     }
+  };
+
+  const handleAddGenre = () => {
+    if (newGenre.trim() && !tempGenres.includes(newGenre)) {
+      setTempGenres([...tempGenres, newGenre.trim()]);
+      setNewGenre("");
+    }
+  };
+
+  const handleRemoveGenre = (genre: string) => {
+    setTempGenres(tempGenres.filter((g: string) => g !== genre));
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddGenre();
+    }
+  };
+
+  const toggleAddGenre = () => {
+    setIsAddingGenre(true);
   };
 
   useEffect(() => {
@@ -113,21 +157,86 @@ const Profile = () => {
               <label>Bio</label>
               <input
                 type="text"
-                value={profileData.bio}
-                onChange={(e) =>
-                  setProfileData({ ...profileData, bio: e.target.value })
-                }
                 placeholder="Tell us about yourself..."
+                value={bio}
+                onChange={(e) => {
+                  setBio(e.target.value);
+                  handleDebouncedSave();
+                }}
+                onBlur={handleSave}
               />
             </div>
             <div className="form-field">
               <label>Favorite Genres</label>
-              {profileData.favoriteGenres.map((genre) => (
-                <span key={genre} className="preference-tag">
-                  {genre}
+              {tempGenres.map(
+                (
+                  genre:
+                    | boolean
+                    | React.ReactElement<
+                        any,
+                        string | React.JSXElementConstructor<any>
+                      >
+                    | Iterable<React.ReactNode>
+                    | React.Key
+                    | null
+                    | undefined
+                ) => (
+                  <span
+                    key={genre}
+                    className="preference-tag"
+                    style={{ display: "inline-flex", alignItems: "center" }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.querySelector(
+                        ".remove-genre-button"
+                      )!.style.visibility = "visible")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.querySelector(
+                        ".remove-genre-button"
+                      )!.style.visibility = "hidden")
+                    }
+                  >
+                    {genre}
+                    <span
+                      className="remove-genre-button"
+                      onClick={() => handleRemoveGenre(genre)}
+                      style={{
+                        marginLeft: "8px",
+                        fontSize: "14px",
+                        cursor: "pointer",
+                        visibility: "hidden",
+                      }}
+                    >
+                      ✕
+                    </span>
+                  </span>
+                )
+              )}
+              {isAddingGenre ? (
+                <div
+                  className="add-genre-section"
+                  style={{ display: "inline-flex", alignItems: "center" }}
+                >
+                  <input
+                    type="text"
+                    placeholder="Add a genre..."
+                    value={newGenre}
+                    onChange={(e) => setNewGenre(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    className="preference-tag-input"
+                  />
+                  <button
+                    className="preference-tag"
+                    onClick={() => setIsAddingGenre(false)}
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <span className="preference-tag" onClick={toggleAddGenre}>
+                  + Add
                 </span>
-              ))}
-              <span className="preference-tag">+ Add</span>
+              )}
             </div>
             <button className="save-button" onClick={handleSave}>
               Save Changes
@@ -153,6 +262,16 @@ const Profile = () => {
                 textButton={"Make a new playlist"}
                 styleButton="preference-tag"
               />
+              {bio ? <p className="bio-p">{bio}</p> : <p></p>}
+              {profileData.favoriteGenres
+                .filter(
+                  (genre: any): genre is string => typeof genre === "string"
+                )
+                .map((genre: string) => (
+                  <span key={genre} className="preference-tag-profil">
+                    {genre}
+                  </span>
+                ))}
             </div>
           </div>
         </div>
