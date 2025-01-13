@@ -108,3 +108,17 @@ h2 {
 .button-container {
   margin-top: 1rem;
 }
+
+li {
+  list-style-type: none;
+  margin-top: 0.5rem;
+  color: var(--pink);
+  margin-left: 0.5rem;
+}
+
+ul {
+  padding: 0;
+  border: 1px solid var(--pink);
+  border-radius: 0.5rem;
+  margin-top: 0.5rem;
+}

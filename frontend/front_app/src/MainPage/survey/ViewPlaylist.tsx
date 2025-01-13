@@ -13,7 +13,7 @@ interface ViewPlaylistProps {
   handleSavePlaylist: () => void;
   successMessage: string | null;
   username: string;
-  playlistId: number | null;
+  playlistId: string | undefined;
 }
 
 const ViewPlaylist: React.FC<ViewPlaylistProps> = ({
@@ -28,6 +28,8 @@ const ViewPlaylist: React.FC<ViewPlaylistProps> = ({
   username,
   playlistId,
 }) => {
+  const SpotifyPlaylist = playlistId?.split("/playlist/")[1];
+  console.log(SpotifyPlaylist);
   return (
     <Modal
       isOpen={isOpen}
@@ -59,7 +61,7 @@ const ViewPlaylist: React.FC<ViewPlaylistProps> = ({
         </div>
       )}
 
-      <PlaylistTracks username={username} playlistId={playlistId} />
+      <PlaylistTracks username={username} playlistId={SpotifyPlaylist} />
 
       {/* Butoane de control */}
       <div className="button-container">

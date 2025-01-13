@@ -9,6 +9,7 @@ interface PlaylistModalProps {
   playlistName: string;
   mood: string; // Adăugăm mood-ul playlistului
   playlistLink: string; // Adăugăm link-ul pentru playlist
+  playlistSpotifyLink: string; // Adăugăm link-ul Spotify pentru playlist
 }
 
 const PlaylistModal: React.FC<PlaylistModalProps> = ({
@@ -66,27 +67,30 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     const username = localStorage.getItem("username"); // asigură-te că acesta este salvat în localStorage sau gestionat corespunzător
 
     if (!token || !username) {
-        setErrorMessage("You must be logged in to save a playlist.");
-        return;
+      setErrorMessage("You must be logged in to save a playlist.");
+      return;
     }
 
     try {
-        const url = `http://localhost:8080/api/playlists/add?username=${username}&name=${playlistName}&mood=${mood}&spotifyPlaylistId=${playlistLink}`;
-        await axios.post(url, {}, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        });
-        setSuccessMessage("Playlist saved successfully!");
-        if (window.location.pathname === "/profile") {
-          window.location.reload();
+      const url = `http://localhost:8080/api/playlists/add?username=${username}&name=${playlistName}&mood=${mood}&spotifyPlaylistId=${playlistLink}`;
+      await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
+      );
+      setSuccessMessage("Playlist saved successfully!");
+      if (window.location.pathname === "/profile") {
+        window.location.reload();
+      }
     } catch (error) {
-        console.error("Error saving playlist:", error);
-        setErrorMessage("Failed to save playlist. Please try again.");
+      console.error("Error saving playlist:", error);
+      setErrorMessage("Failed to save playlist. Please try again.");
     }
-};
-
+  };
 
   // Folosește useEffect pentru a încărca piesele atunci când se deschide modalul
   useEffect(() => {
@@ -94,6 +98,8 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       fetchPlaylistSongs();
     }
   }, [isOpen]);
+
+  const playlistId = playlistLink; // Obține id-ul playlistului din link
 
   return (
     <ViewPlaylist
@@ -104,7 +110,9 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
       loading={loading}
       handlePlay={handlePlay}
       handleSavePlaylist={handleSavePlaylist}
-      successMessage={successMessage} 
+      successMessage={successMessage}
+      username={localStorage.getItem("username") || ""}
+      playlistId={playlistId}
     />
   );
 };
