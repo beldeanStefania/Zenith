@@ -21,11 +21,16 @@ const generateShortId = () => Math.random().toString(16).slice(2, 6);
 interface SurveyProps {
   show: boolean;
   setShowSurvey: (show: boolean) => void;
-  textButton : string;
+  textButton: string;
   styleButton: string;
 }
 
-const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , styleButton }) => {
+const Survey: React.FC<SurveyProps> = ({
+  show,
+  setShowSurvey,
+  textButton,
+  styleButton,
+}) => {
   // Indexul întrebării curente
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
@@ -44,8 +49,6 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , style
   // Mesaj de eroare
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [playlistLink, setPlaylistLink] = useState<string>(""); // Asigură-te că e un string, nu `null`
-
-
 
   // Funcție apelată când userul alege un răspuns la întrebare
   const handleAnswer = (answer: number) => {
@@ -102,7 +105,7 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , style
 
       let nrMood = 0;
       if (moodDTO.happinessScore > nrMood) {
-        mood ="happy";
+        mood = "happy";
         nrMood = moodDTO.happinessScore;
       }
       if (moodDTO.sadnessScore > nrMood) {
@@ -123,7 +126,6 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , style
       const playlistLink = response.data; // Asigură-te că este un string valid din răspunsul backend-ului
       setPlaylistLink(playlistLink); // Salvează link-ul
       setShowPlaylist(true); // Deschide modalul pentru playlist
-      
     } catch (error) {
       console.error("Error generating playlist:", error);
       setErrorMessage("Failed to generate playlist. Please try again.");
@@ -133,36 +135,35 @@ const Survey: React.FC<SurveyProps> = ({ show, setShowSurvey, textButton , style
   };
 
   // Survey.tsx
-const handlePlayPlaylist = async () => {
-  setLoading(true);
-  const token = localStorage.getItem("token");
-  const username = localStorage.getItem("username");
+  const handlePlayPlaylist = async () => {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    const username = localStorage.getItem("username");
 
-  if (!token || !username) {
-    setErrorMessage("You must be logged in to play a playlist.");
-    setLoading(false);
-    return;
-  }
+    if (!token || !username) {
+      setErrorMessage("You must be logged in to play a playlist.");
+      setLoading(false);
+      return;
+    }
 
-  try {
-    const url = `http://localhost:8080/api/spotify/play-playlist?username=${username}&playlistId=${playlistLink}`;
+    try {
+      const url = `http://localhost:8080/api/spotify/play-playlist?username=${username}&playlistId=${playlistLink}`;
 
-    // Trimiterea cererii pentru a reda playlist-ul
-    await axios.post(url, null, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+      // Trimiterea cererii pentru a reda playlist-ul
+      await axios.post(url, null, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setLoading(false);
-  } catch (error) {
-    console.error("Error playing playlist:", error);
-    //setErrorMessage("Failed to play playlist. Please try again.");
-    setLoading(false);
-  }
-};
+      setLoading(false);
+    } catch (error) {
+      console.error("Error playing playlist:", error);
+      //setErrorMessage("Failed to play playlist. Please try again.");
+      setLoading(false);
+    }
+  };
 
-  
   // Închide Survey-ul
   const handleCloseSurvey = () => {
     setShowSurvey(false);
@@ -198,14 +199,17 @@ const handlePlayPlaylist = async () => {
             {loading && <p>Loading...</p>}
             {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
             <div className="button-container">
-            {!loading && !errorMessage && (
-              <button className="create" onClick={() => setShowPlaylist(true)}>
-                View Playlist
+              {!loading && !errorMessage && (
+                <button
+                  className="create"
+                  onClick={() => setShowPlaylist(true)}
+                >
+                  View Playlist
+                </button>
+              )}
+              <button className="create-close" onClick={handleCloseSurvey}>
+                Close Survey
               </button>
-            )}
-            <button className="create-close" onClick={handleCloseSurvey}>
-              Close Survey
-            </button>
             </div>
           </div>
         )}
@@ -217,6 +221,7 @@ const handlePlayPlaylist = async () => {
         playlistName={playlistName}
         playlistLink={playlistLink}
         mood={mood}
+        playlistSpotifyLink={playlistLink}
       />
     </>
   );
