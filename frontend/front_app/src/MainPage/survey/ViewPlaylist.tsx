@@ -1,6 +1,13 @@
 import Modal from "react-modal";
 import PlaylistTracks from "./PlaylistTracks";
 
+/**
+ * @fileoverview ViewPlaylist component for displaying a generated playlist
+ * Shows the playlist name, tracks, and provides options to play and save the playlist
+ * @requires react-modal
+ * @requires ./PlaylistTracks
+ */
+
 interface ViewPlaylistProps {
   isOpen: boolean;
   onRequestClose: () => void;
@@ -16,6 +23,24 @@ interface ViewPlaylistProps {
   playlistId: string | undefined;
 }
 
+/**
+ * ViewPlaylist component displays a generated playlist with its name, tracks, and control options
+ * Allows the user to play the playlist, save it, and view the tracks
+ *
+ * @component
+ * @param {Object} props - Component properties
+ * @param {boolean} props.isOpen - Flag to control the visibility of the playlist modal
+ * @param {Function} props.onRequestClose - Function to close the playlist modal
+ * @param {string} props.playlistName - Name of the generated playlist
+ * @param {Object[]} props.songs - Array of song objects containing track details
+ * @param {boolean} props.loading - Flag indicating if the playlist is being loaded
+ * @param {Function} props.handlePlay - Function to handle playing the playlist
+ * @param {Function} props.handleSavePlaylist - Function to handle saving the playlist
+ * @param {string|null} props.successMessage - Success message to display after saving the playlist
+ * @param {string} props.username - Username of the user
+ * @param {string|undefined} props.playlistId - ID of the generated playlist
+ * @returns {JSX.Element} Renders the playlist modal with playlist details and control options
+ */
 const ViewPlaylist: React.FC<ViewPlaylistProps> = ({
   isOpen,
   onRequestClose,

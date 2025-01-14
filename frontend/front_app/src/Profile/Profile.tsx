@@ -1,3 +1,10 @@
+/**
+ * @fileoverview Profile component that displays user information and playlists
+ * @requires react
+ * @requires recharts
+ * @requires axios
+ */
+
 import React, { useEffect, useState } from "react";
 import {
   LineChart,
@@ -13,6 +20,24 @@ import Survey from "../MainPage/survey/Survey";
 import axios from "axios";
 import ViewPlaylist from "../MainPage/survey/ViewPlaylist";
 
+/**
+ * Interface for playlist data structure
+ * @interface Playlist
+ */
+interface Playlist {
+  id: number;
+  name: string;
+  createdAt: string;
+  mood: string;
+  spotifyPlaylistId: string;
+}
+
+/**
+ * Custom tooltip component for the mood chart
+ * @component
+ * @param {Object} props - Tooltip props from recharts
+ * @returns {JSX.Element|null} Rendered tooltip or null if inactive
+ */
 const CustomTooltip = ({ payload, label, active }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -31,7 +56,17 @@ const CustomTooltip = ({ payload, label, active }: any) => {
   return null;
 };
 
+/**
+ * Profile component that displays user information, mood history, and playlists
+ * Provides functionality to view and manage playlists
+ * 
+ * @component
+ * @returns {JSX.Element} The complete user profile interface
+ */
 const Profile = () => {
+  /**
+   * State management for various profile features
+   */
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [show, setShowSurvey] = useState(false);
   const [profileData, setProfileData] = useState({
@@ -39,25 +74,31 @@ const Profile = () => {
     bio: "",
     favoriteGenres: ["Rock", "Jazz", "Electronic"],
   });
-  const token = localStorage.getItem("token");
-  interface Playlist {
-    id: number;
-    name: string;
-    createdAt: string;
-    mood: string;
-    spotifyPlaylistId: string;
-  }
-
+  
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showPlaylist, setShowPlaylist] = useState(false);
   const [namePlaylists, setNamePlaylists] = useState("");
   const [idPlaylist, setIdPLaylist] = useState<number | null>(null);
   const [playlistSpotifyLink, setPlaylistSpotifyLink] = useState("");
 
+  /**
+   * Authentication token for API requests
+   */
+  const token = localStorage.getItem("token");
+
+  /**
+   * Handles saving profile changes
+   * @function
+   */
   const handleSave = () => {
     setIsModalOpen(false);
   };
 
+  /**
+   * Fetches user playlists from the server
+   * @async
+   * @function
+   */
   const fetchPlaylists = async () => {
     try {
       const url = `http://localhost:8080/api/playlists/getPlaylists/${profileData.username}`;
@@ -72,10 +113,16 @@ const Profile = () => {
     }
   };
 
+  /**
+   * Effect hook to fetch playlists on component mount
+   */
   useEffect(() => {
     fetchPlaylists();
   }, []);
 
+  /**
+   * Transforms playlist data for mood chart
+   */
   let mockMoodData: { date: string; mood: string }[] = [];
 
   try {
@@ -91,6 +138,7 @@ const Profile = () => {
 
   return (
     <>
+      {/* Profile customization modal */}
       {isModalOpen && (
         <>
           <div
@@ -135,7 +183,10 @@ const Profile = () => {
           </div>
         </>
       )}
+
+      {/* Main profile content */}
       <div className="profile-container">
+        {/* Profile card section */}
         <div className="card">
           <CardProfile />
           <div className="bio">
@@ -157,6 +208,7 @@ const Profile = () => {
           </div>
         </div>
 
+        {/* Music profile section */}
         <div className="card">
           <h2>Your Music Profile</h2>
           {playlists.length === 0 ? (
@@ -195,6 +247,7 @@ const Profile = () => {
             </div>
           )}
 
+          {/* Stats section */}
           <div className="stats-grid">
             <div className="recommend-card card">
               <p className="card-h">{playlists.length}</p>
@@ -202,6 +255,7 @@ const Profile = () => {
             </div>
           </div>
 
+          {/* Playlists section */}
           <div className="recommendation-section">
             <h3>Recent Playlists</h3>
             <div
@@ -230,6 +284,8 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* Playlist viewer modal */}
       <ViewPlaylist
         isOpen={showPlaylist}
         onRequestClose={() => setShowPlaylist(!showPlaylist)}

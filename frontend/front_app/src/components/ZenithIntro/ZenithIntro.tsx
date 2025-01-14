@@ -1,25 +1,60 @@
+/**
+ * @fileoverview ZenithIntro component that displays the initial loading animation
+ * @requires react
+ */
+
 import React, { useState, useEffect } from 'react';
 import zenithText from '../../assets/Zenith-text.png';
 import waveImg from '../../assets/Wave.png';
 import constellationImg from '../../assets/Constellation.jpg';
 
+/**
+ * Interface for the ZenithIntro component props
+ * @interface ZenithIntroProps
+ * @property {() => void} onComplete - Callback function to be called when intro animation completes
+ */
 interface ZenithIntroProps {
     onComplete: () => void;
 }
 
+/**
+ * ZenithIntro component that displays an animated intro sequence with constellation background,
+ * wave effect, and Zenith text logo
+ * 
+ * @component
+ * @param {ZenithIntroProps} props - Component props
+ * @returns {JSX.Element} The intro animation sequence
+ */
 const ZenithIntro: React.FC<ZenithIntroProps> = ({ onComplete }) => {
+    /**
+     * State to control visibility of intro elements
+     */
     const [isVisible, setIsVisible] = useState(false);
+    
+    /**
+     * State to control distortion effect timing
+     */
     const [startDistortion, setStartDistortion] = useState(false);
 
+    /**
+     * Effect hook to manage animation timing and sequence
+     * Sets up three timers:
+     * 1. Show elements after 100ms
+     * 2. Start distortion effect after 1000ms
+     * 3. Complete intro after 2500ms
+     */
     useEffect(() => {
+        // Initial visibility
         setTimeout(() => {
             setIsVisible(true);
         }, 100);
 
+        // Start distortion effect
         setTimeout(() => {
             setStartDistortion(true);
         }, 1000);
 
+        // Complete intro
         setTimeout(() => {
             onComplete();
         }, 2500);
@@ -34,7 +69,7 @@ const ZenithIntro: React.FC<ZenithIntroProps> = ({ onComplete }) => {
             height: '100vh',
             backgroundColor: 'black',
             overflow: 'hidden',
-            zIndex: 9999 // Ensure it's on top of everything
+            zIndex: 9999
         }}>
             {/* Constellation Background with drift effect */}
             <div style={{
@@ -59,7 +94,7 @@ const ZenithIntro: React.FC<ZenithIntroProps> = ({ onComplete }) => {
                 />
             </div>
 
-            {/* Wave with distortion */}
+            {/* Wave with distortion effect */}
             <div style={{
                 position: 'absolute',
                 top: '50%',
