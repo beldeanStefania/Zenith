@@ -48,6 +48,7 @@
   overflow: auto;
   max-height: 150px;
   padding: 1rem 0;
+  color: var(--white);
 }
 
 ::-webkit-scrollbar {
@@ -168,7 +169,7 @@
   background: linear-gradient(45deg, var(--pink), var(--light-blue));
   cursor: pointer;
   transition: transform 0.2s;
-  color: var(--background-color);
+  color: var(--ba-wi);
   text-align: center;
   font-size: 0.8rem;
   font-weight: bold;
@@ -205,4 +206,28 @@
 }
 .card-p {
   font-weight: bold;
+  color: var(--white);
+}
+
+.bio-p {
+  color: var(--light-gray);
+  font-size: 1rem;
+  font-family: "Lucida Handwriting", cursive;
+  margin-top: 1rem;
+}
+
+.preference-tag-profil {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin: 0.25rem;
+  border-radius: 20px;
+  background: linear-gradient(45deg, var(--light-gray), var(--light-blue));
+  cursor: pointer;
+  transition: transform 0.2s;
+  color: var(--ba-wi);
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+  margin-top: 1rem;
 }

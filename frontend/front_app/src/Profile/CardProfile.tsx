@@ -3,7 +3,8 @@ import "./CardProfile.css";
 
 const CardProfile: React.FC = () => {
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>(
-    localStorage.getItem("profile_picture") || "d4741cb779ddec6509ca1ae0cb137a7d-removebg-preview.png"
+    localStorage.getItem("profile_picture") ||
+      "d4741cb779ddec6509ca1ae0cb137a7d-removebg-preview.png"
   );
 
   // Salvăm imaginea în localStorage
