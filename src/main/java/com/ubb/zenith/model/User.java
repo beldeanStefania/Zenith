@@ -40,9 +40,6 @@ public class User{
 //                       message = "Password must contain at least one lowercase letter, one uppercase letter, one special character and one digit")
     private String password;
 
-    @Min(value = 12, message = "You must be at least 12 years old")
-    private Integer age;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     @JsonBackReference
@@ -57,6 +54,5 @@ public class User{
 
     private String spotifyRefreshToken;
     private LocalDateTime spotifyTokenExpiry;
-
 
 }

@@ -1,13 +1,23 @@
 import React, { useEffect, useState } from "react";
 import "./CardProfile.css";
 
-const CardProfile: React.FC = () => {
-  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>(
-    localStorage.getItem("profile_picture") ||
-      "d4741cb779ddec6509ca1ae0cb137a7d-removebg-preview.png"
-  );
+interface CardProfileProps {
+  username: string;
+}
 
-  // Salvăm imaginea în localStorage
+const CardProfile: React.FC<CardProfileProps> = ({ username }) => {
+  // Cheia din localStorage devine profile_picture_<username>
+  const keyForUser = `profile_picture_${username}`;
+
+  // Citește imaginea, dacă există, altfel fallback
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>(() => {
+    const stored = localStorage.getItem(keyForUser);
+    return stored
+      ? stored
+      : "d4741cb779ddec6509ca1ae0cb137a7d-removebg-preview.png"; // fallback / default
+  });
+
+  // Când încărcăm un fișier, îl transformăm în base64 și-l salvăm în localStorage
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -15,7 +25,7 @@ const CardProfile: React.FC = () => {
       reader.onloadend = () => {
         const imageBase64 = reader.result as string;
         setImagePreviewUrl(imageBase64);
-        localStorage.setItem("profile_picture", imageBase64);
+        localStorage.setItem(keyForUser, imageBase64);
       };
       reader.readAsDataURL(file);
     }

@@ -61,7 +61,6 @@ public class UserService {
         user.setUsername(userDTO.getUsername());
         user.setEmail(userDTO.getEmail());
         user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-        user.setAge(userDTO.getAge());
         user.setSpotifyAccessToken(null); // Initial, nu există token Spotify
         user.setSpotifyRefreshToken(null); // Acesta poate fi setat ulterior, în cazul în care există
         user.setSpotifyTokenExpiry(null);
@@ -104,7 +103,6 @@ public class UserService {
 
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
-        user.setAge(userDTO.getAge());
 
         return userRepository.save(user);
     }

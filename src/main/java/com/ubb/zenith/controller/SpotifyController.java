@@ -171,8 +171,6 @@ public class SpotifyController {
     }
 
 
-
-
     /**
      * Endpoint to view details of a Spotify playlist.
      * @param username The username of the user.
@@ -204,18 +202,17 @@ public class SpotifyController {
             @RequestParam String username,
             @RequestParam String playlistId) {
         try {
-            // Get the access token for the user.
+            System.out.println("DEBUG - Received Playlist ID: " + playlistId);
+
             String accessToken = userService.getAccessToken(username);
 
-            // Extract the playlist ID from the URL, if necessary.
+            // Dacă încă este un URL complet, curăță-l
             if (playlistId.contains("https://open.spotify.com/playlist/")) {
                 playlistId = playlistId.substring(playlistId.lastIndexOf("/") + 1);
+                System.out.println("DEBUG - Corrected Playlist ID: " + playlistId);
             }
 
-            // Get the list of track URIs in the playlist.
             List<String> trackUris = spotifyApiService.getTracksFromPlaylist(playlistId, accessToken);
-
-            // Send a request to Spotify API to play the tracks.
             spotifyApiService.playTracks(trackUris, accessToken);
 
             return ResponseEntity.ok("Playlist playback started successfully!");
@@ -225,4 +222,5 @@ public class SpotifyController {
             return ResponseEntity.status(500).body("Error: " + e.getMessage());
         }
     }
+
 }
