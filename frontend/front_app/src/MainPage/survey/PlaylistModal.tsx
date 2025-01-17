@@ -1,3 +1,9 @@
+/**
+ * @fileoverview PlaylistModal component that displays playlist details and controls
+ * Handles playlist playback, saving, and tracks display
+ * @requires react
+ * @requires axios
+ */
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ViewPlaylist from "./ViewPlaylist";
@@ -12,6 +18,20 @@ interface PlaylistModalProps {
   playlistSpotifyLink: string; // Adăugăm link-ul Spotify pentru playlist
 }
 
+/**
+ * PlaylistModal component provides a modal interface for playlist interaction
+ * Manages playlist playback, saving functionality, and track display
+ * 
+ * @component
+ * @param {Object} props - Component properties
+ * @param {boolean} props.isOpen - Controls modal visibility
+ * @param {Function} props.onRequestClose - Handler for closing the modal
+ * @param {string} props.playlistName - Name of the playlist
+ * @param {string} props.playlistLink - Link to the playlist
+ * @param {string} props.mood - Mood associated with the playlist
+ * @param {string} props.playlistSpotifyLink - Spotify URL for the playlist
+ * @returns {JSX.Element} Modal with playlist information and controls
+ */
 const PlaylistModal: React.FC<PlaylistModalProps> = ({
   isOpen,
   onRequestClose,
@@ -19,12 +39,18 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   playlistLink,
   mood,
 }) => {
+  /**
+   * State management for playlist data and UI states
+   */
   const [songs, setSongs] = useState<any[]>([]); // Piesele playlistului
   const [loading, setLoading] = useState<boolean>(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mesaj de eroare
   const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mesaj de succes
 
-  // Funcție pentru a obține piesele playlistului
+   /**
+   * Fetches songs for the playlist from the API
+   * @async
+   */
   const fetchPlaylistSongs = async () => {
     try {
       const response = await axios.get(playlistLink); // Aici folosești link-ul care conține piesele
@@ -37,7 +63,10 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Funcție de redare a playlistului
+  /**
+   * Handles playlist playback through Spotify
+   * @async
+   */
   const handlePlay = async () => {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -61,7 +90,10 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Funcție de salvare a playlistului
+  /**
+   * Handles saving the playlist to user's library
+   * @async
+   */
   const handleSavePlaylist = async () => {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username"); // asigură-te că acesta este salvat în localStorage sau gestionat corespunzător
@@ -92,7 +124,9 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Folosește useEffect pentru a încărca piesele atunci când se deschide modalul
+  /**
+   * Effect hook to fetch playlist songs when modal opens
+   */
   useEffect(() => {
     if (isOpen) {
       fetchPlaylistSongs();

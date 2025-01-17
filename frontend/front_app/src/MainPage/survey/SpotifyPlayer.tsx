@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
 
+/**
+ * @fileoverview SpotifyPlayer component for integrating the Spotify Web Playback SDK
+ * Handles player initialization, authentication, and playback events
+ * @requires react
+ */
+
 interface InitializationError {
   message: string;
 }
@@ -28,7 +34,21 @@ interface SpotifyPlayerProps {
   accessToken: string;
 }
 
+/**
+ * SpotifyPlayer component integrates the Spotify Web Playback SDK into the application
+ * Initializes the player, handles authentication, and listens for playback events
+ * 
+ * @component
+ * @param {Object} props - Component properties
+ * @param {string} props.accessToken - Spotify access token for authentication
+ * @returns {JSX.Element} Renders the Spotify player container
+ */
 const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken }) => {
+
+  /**
+   * Effect hook to initialize the Spotify Web Playback SDK when the component mounts
+   * Handles player setup, authentication, and event listeners
+   */
   useEffect(() => {
     if (window.Spotify) {
       const player = new window.Spotify.Player({
@@ -46,15 +66,18 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken }) => {
           console.error(message);
         }
       );
+
       player.addListener(
         "authentication_error",
         ({ message }: AuthenticationError) => {
           console.error(message);
         }
       );
+
       player.addListener("account_error", ({ message }: AccountError) => {
         console.error(message);
       });
+
       player.addListener("playback_error", ({ message }: PlaybackError) => {
         console.error(message);
       });
@@ -74,7 +97,9 @@ const SpotifyPlayer: React.FC<SpotifyPlayerProps> = ({ accessToken }) => {
       // Connect to the player
       player.connect();
 
-      // Cleanup on unmount
+      /**
+       * Cleanup function to disconnect the player when component unmounts
+       */
       return () => {
         player.disconnect();
       };

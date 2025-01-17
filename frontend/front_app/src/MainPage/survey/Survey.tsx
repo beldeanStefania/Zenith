@@ -5,6 +5,17 @@ import PlaylistModal from "./PlaylistModal";
 import "./Survey.css";
 import axios from "axios";
 
+/**
+ * @fileoverview Survey component for collecting user mood data and generating playlists
+ * Provides a series of questions, collects user responses, and interacts with the backend API
+ * @requires react
+ * @requires react-modal
+ * @requires ./ButtonGroup
+ * @requires ./PlaylistModal
+ * @requires ./Survey.css
+ * @requires axios
+ */
+
 // Întrebările chestionarului
 const questions = [
   "How much do you feel like smiling today?",
@@ -25,6 +36,18 @@ interface SurveyProps {
   styleButton: string;
 }
 
+/**
+ * Survey component collects user mood data through a series of questions
+ * Generates a playlist based on the user's responses by interacting with the backend API
+ *
+ * @component
+ * @param {Object} props - Component properties
+ * @param {boolean} props.show - Flag to control the visibility of the survey modal
+ * @param {Function} props.setShowSurvey - Function to update the visibility of the survey modal
+ * @param {string} props.textButton - Text to display on the survey trigger button
+ * @param {string} props.styleButton - CSS class name for the survey trigger button
+ * @returns {JSX.Element} Renders the survey modal and playlist modal
+ */ 
 const Survey: React.FC<SurveyProps> = ({
   show,
   setShowSurvey,
@@ -43,14 +66,19 @@ const Survey: React.FC<SurveyProps> = ({
   // Numele playlist-ului generat
   const [playlistName, setPlaylistName] = useState<string>("");
 
-  // Stare de încărcare
+  // Stare de încărcare 
   const [loading, setLoading] = useState(false);
 
   // Mesaj de eroare
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [playlistLink, setPlaylistLink] = useState<string>(""); // Asigură-te că e un string, nu `null`
 
-  // Funcție apelată când userul alege un răspuns la întrebare
+  /**
+   * Event handler for user answering a question
+   * Updates the answers state and advances to the next question or generates the playlist
+   *
+   * @param {number} answer - User's answer to the current question
+   */
   const handleAnswer = (answer: number) => {
     const updatedAnswers = [...answers, answer];
     setAnswers(updatedAnswers);
@@ -71,6 +99,13 @@ const Survey: React.FC<SurveyProps> = ({
     energyScore: number;
   }
 
+  /**
+   * Generates a playlist based on the user's survey responses
+   * Sends a request to the backend API to create the playlist on Spotify
+   *
+   * @async
+   * @param {number[]} answers - User's answers to the survey questions
+   */
   const handleGeneratePlaylist = async (answers: number[]): Promise<void> => {
     setLoading(true);
     setErrorMessage(null);
@@ -135,6 +170,11 @@ const Survey: React.FC<SurveyProps> = ({
   };
 
   // Survey.tsx
+  /**
+   * Starts playing the generated playlist on Spotify
+   *
+   * @async
+   */
   const handlePlayPlaylist = async () => {
     setLoading(true);
     const token = localStorage.getItem("token");
@@ -164,7 +204,9 @@ const Survey: React.FC<SurveyProps> = ({
     }
   };
 
-  // Închide Survey-ul
+  /**
+   * Closes the survey modal and resets the component state
+   */
   const handleCloseSurvey = () => {
     setShowSurvey(false);
     setAnswers([]);

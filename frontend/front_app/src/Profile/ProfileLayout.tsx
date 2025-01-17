@@ -1,6 +1,16 @@
+/**
+ * @fileoverview ProfileLayout component that provides the basic structure for user profile displays
+ * @requires react
+ * @requires styled-components
+ */
+
 import React from 'react';
 import styled from 'styled-components';
 
+/**
+ * Styled container component for the profile layout
+ * Centers content and provides consistent padding
+ */
 const ProfileContainer = styled.div`
  display: flex;
  flex-direction: column;
@@ -9,6 +19,10 @@ const ProfileContainer = styled.div`
  color: var(--light-gray);
 `;
 
+/**
+ * Styled header component for profile information
+ * Arranges avatar and user info horizontally
+ */
 const ProfileHeader = styled.div`
  display: flex;
  align-items: center;
@@ -16,6 +30,10 @@ const ProfileHeader = styled.div`
  margin-bottom: 2rem;
 `;
 
+/**
+ * Styled avatar component with gradient border effect
+ * Handles image containment and border radius
+ */
 const Avatar = styled.div`
  width: 150px;
  height: 150px;
@@ -31,6 +49,10 @@ const Avatar = styled.div`
  }
 `;
 
+/**
+ * Styled component for user information display
+ * Handles text styling and spacing
+ */
 const UserInfo = styled.div`
  h1 {
    font-size: 2rem;
@@ -41,6 +63,21 @@ const UserInfo = styled.div`
    color: var(--light-purple);
  }
 `;
+
+/**
+ * ProfileLayout component that provides a consistent layout structure for user profiles
+ * Includes an avatar, username, and join date display
+ * 
+ * @component
+ * @returns {JSX.Element} A styled profile layout template
+ * 
+ * @example
+ * ```tsx
+ * <ProfileLayout>
+ *   {--Additional profile content --}
+ * </ProfileLayout>
+ * ```
+ */
 
 export const ProfileLayout: React.FC = () => {
  return (
