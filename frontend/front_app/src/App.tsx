@@ -12,8 +12,17 @@ import PrivateRoute from "./components/PrivateRoute/PrivateRoute";
 import ZenithIntro from "./components/ZenithIntro/ZenithIntro";
 import About from "./About/About";
 
+/**
+ * Main application component that manages the application state and routing
+ * @component
+ * @returns {JSX.Element} The rendered App component
+ */
 function App() {
+  // Initialize theme from localStorage or default to 'light'
   const currentTheme = localStorage.getItem("current_theme") || "light";
+  /**
+   * State management for various application features
+   */
   const [theme, setTheme] = useState(currentTheme);
   const [showSurvey, setShowSurvey] = useState(false);
   const [showSingUp, setShowSingUp] = useState(false);
@@ -21,6 +30,9 @@ function App() {
   const [showIntro, setShowIntro] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
 
+  /**
+   * Effect hook to handle authentication state and theme persistence
+   */
   useEffect(() => {
     const token = localStorage.getItem('token');
     setIsLoggedIn(!!token);
@@ -29,6 +41,10 @@ function App() {
     document.documentElement.setAttribute("theme", theme);
   }, [theme]);
 
+  /**
+   * Handles the completion of the intro animation
+   * @function
+   */
   const handleIntroComplete = () => {
     setFadeOut(true);
     setTimeout(() => {

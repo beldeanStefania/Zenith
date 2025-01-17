@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ViewPlaylist from "./ViewPlaylist";
 
-// PlaylistModal va primi piesele playlistului prin props
+// PlaylistModal is a component that displays a modal with the songs of a playlist 
 interface PlaylistModalProps {
   isOpen: boolean;
   onRequestClose: () => void;
   playlistName: string;
-  mood: string; // Adăugăm mood-ul playlistului
-  playlistLink: string; // Adăugăm link-ul pentru playlist
-  playlistSpotifyLink: string; // Adăugăm link-ul Spotify pentru playlist
+  mood: string; 
+  playlistLink: string; 
+  playlistSpotifyLink: string; 
 }
 
 const PlaylistModal: React.FC<PlaylistModalProps> = ({
@@ -19,16 +19,16 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
   playlistLink,
   mood,
 }) => {
-  const [songs, setSongs] = useState<any[]>([]); // Piesele playlistului
+  const [songs, setSongs] = useState<any[]>([]); // Array of songs
   const [loading, setLoading] = useState<boolean>(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null); // Mesaj de eroare
-  const [successMessage, setSuccessMessage] = useState<string | null>(null); // Mesaj de succes
+  const [errorMessage, setErrorMessage] = useState<string | null>(null); 
+  const [successMessage, setSuccessMessage] = useState<string | null>(null); 
 
   // Funcție pentru a obține piesele playlistului
   const fetchPlaylistSongs = async () => {
     try {
-      const response = await axios.get(playlistLink); // Aici folosești link-ul care conține piesele
-      setSongs(response.data.tracks.items); // Presupunem că Spotify returnează piesele în acest format
+      const response = await axios.get(playlistLink); 
+      setSongs(response.data.tracks.items); 
       setLoading(false);
     } catch (error) {
       console.error("Error fetching playlist songs:", error);
@@ -37,7 +37,7 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Funcție de redare a playlistului
+  // Function to play a playlist
   const handlePlay = async () => {
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
@@ -61,10 +61,10 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Funcție de salvare a playlistului
+  // Function to save a playlist
   const handleSavePlaylist = async () => {
     const token = localStorage.getItem("token");
-    const username = localStorage.getItem("username"); // asigură-te că acesta este salvat în localStorage sau gestionat corespunzător
+    const username = localStorage.getItem("username"); 
 
     if (!token || !username) {
       setErrorMessage("You must be logged in to save a playlist.");
@@ -92,14 +92,14 @@ const PlaylistModal: React.FC<PlaylistModalProps> = ({
     }
   };
 
-  // Folosește useEffect pentru a încărca piesele atunci când se deschide modalul
+  // Use useEffect to load the songs when the modal is opened
   useEffect(() => {
     if (isOpen) {
       fetchPlaylistSongs();
     }
   }, [isOpen]);
 
-  const playlistId = playlistLink; // Obține id-ul playlistului din link
+  const playlistId = playlistLink; // Obtain playlistId from playlistLink
 
   return (
     <ViewPlaylist

@@ -11,7 +11,7 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [spotifyAuthUrl, setSpotifyAuthUrl] = useState<string | null>(null); // Stocăm URL-ul de autorizare Spotify
+  const [spotifyAuthUrl, setSpotifyAuthUrl] = useState<string | null>(null); // Save URL to be used in a link
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +41,7 @@ const SignUp = ({ show, setShow }: { show: boolean; setShow: Function }) => {
         const loginResponse = await axios.get(
           `http://localhost:8080/api/spotify/login?username=${username}`
         );
-        setSpotifyAuthUrl(loginResponse.data); // Salvăm URL-ul pentru a fi utilizat într-un link
+        setSpotifyAuthUrl(loginResponse.data); // Save URL to be used in a link
 
         setUsername("");
         setEmail("");

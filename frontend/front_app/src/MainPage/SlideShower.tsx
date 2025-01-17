@@ -93,3 +93,12 @@ const SliderShower = ({
 };
 
 export default SliderShower;
+
+/**
+ * @fileoverview SlideShower component that creates an animated carousel of feature slides
+ * Uses Swiper for carousel functionality with coverflow effect
+ * @requires swiper
+ * @requires swiper/css
+ * @requires swiper/css/effect-coverflow
+ * @requires swiper/css/pagination
+ */
