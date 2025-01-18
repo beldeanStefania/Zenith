@@ -35,9 +35,6 @@ public class User{
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @NotBlank(message = "Password cannot be empty")
-    //@Size(min = 8, message = "Password must have at least 8 characters")
-//    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-//                       message = "Password must contain at least one lowercase letter, one uppercase letter, one special character and one digit")
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)

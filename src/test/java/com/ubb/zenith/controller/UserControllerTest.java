@@ -5,152 +5,215 @@ import com.ubb.zenith.exception.UserAlreadyExistsException;
 import com.ubb.zenith.exception.UserNotFoundException;
 import com.ubb.zenith.model.User;
 import com.ubb.zenith.service.UserService;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.http.ResponseEntity;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
-import static org.springframework.http.MediaType.APPLICATION_JSON;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
-@WebMvcTest(UserController.class)
 class UserControllerTest {
-
-    @MockBean
-    private UserService userService;
 
     @InjectMocks
     private UserController userController;
 
-    private MockMvc mockMvc;
+    @Mock
+    private UserService userService;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
     }
 
     @Test
-    public void shouldGetAllUsers() throws Exception {
-        User user1 = new User();
-        user1.setUsername("user1");
-        User user2 = new User();
-        user2.setUsername("user2");
+    void getAll() {
+        // Arrange
+        User user = new User();
+        user.setUsername("testUser");
+        when(userService.getAll()).thenReturn(Collections.singletonList(user));
 
-        List<User> users = Arrays.asList(user1, user2);
+        // Act
+        List<User> result = userController.getAll();
 
-        when(userService.getAll()).thenReturn(users);
-
-        mockMvc.perform(get("/api/user/getAll"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("[{'username':'user1'}, {'username':'user2'}]"))
-                .andDo(print());
-
-        verify(userService).getAll();
+        // Assert
+        assertEquals(1, result.size());
+        assertEquals("testUser", result.get(0).getUsername());
+        verify(userService, times(1)).getAll();
     }
 
     @Test
-    public void shouldAddUsersSuccssfully() throws Exception {
+    void addSuccess() throws UserAlreadyExistsException {
+        // Arrange
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("newUser");
-        User newUser = new User();
-        newUser.setUsername("newUser");
+        userDTO.setUsername("testUser");
+        User user = new User();
+        user.setUsername("testUser");
+        when(userService.add(userDTO)).thenReturn(user);
 
-        when(userService.add(any(UserDTO.class))).thenReturn(newUser);
+        // Act
+        ResponseEntity<User> response = userController.add(userDTO);
 
-        mockMvc.perform(post("/api/user/add")
-                        .contentType(APPLICATION_JSON)
-                        .content("{\"username\": \"newUser\"}"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("{'username':'newUser'}"))
-                .andDo(print());
-
-        verify(userService).add(any(UserDTO.class));
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("testUser", response.getBody().getUsername());
+        verify(userService, times(1)).add(userDTO);
     }
 
     @Test
-    public void shouldThrowExceptionWhenAddingUser() throws Exception {
+    void addUserAlreadyExists() throws UserAlreadyExistsException {
+        // Arrange
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("existingUser");
+        userDTO.setUsername("testUser");
+        when(userService.add(userDTO)).thenThrow(new UserAlreadyExistsException("User already exists"));
 
-        when(userService.add(any(UserDTO.class))).thenThrow(new UserAlreadyExistsException("User already exists"));
+        // Act
+        ResponseEntity<User> response = userController.add(userDTO);
 
-        mockMvc.perform(post("/api/user/add")
-                        .contentType(APPLICATION_JSON)
-                        .content("{\"username\": \"existingUser\"}"))
-                .andExpect(status().isNotFound())
-                .andDo(print());
-
-        verify(userService).add(any(UserDTO.class));
+        // Assert
+        assertEquals(409, response.getStatusCodeValue());
+        verify(userService, times(1)).add(userDTO);
     }
 
     @Test
-    public void shouldUpdateUserSuccessfully() throws Exception {
+    void updateSuccess() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("updatedUser");
-
+        userDTO.setUsername(username);
         User updatedUser = new User();
-        updatedUser.setUsername("updatedUser");
+        updatedUser.setUsername(username);
 
-        when(userService.update(eq("oldUsername"), any(UserDTO.class))).thenReturn(updatedUser);
+        when(userService.update(username, userDTO)).thenReturn(updatedUser);
 
-        mockMvc.perform(put("/api/user/update/oldUsername")
-                        .contentType(APPLICATION_JSON)
-                        .content("{\"username\": \"updatedUser\"}"))
-                .andExpect(status().isOk())
-                .andExpect(content().json("{'username':'updatedUser'}"))
-                .andDo(print());
+        // Act
+        ResponseEntity<User> response = userController.update(username, userDTO);
 
-        verify(userService).update(eq("oldUsername"), any(UserDTO.class));
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(username, response.getBody().getUsername());
+        verify(userService, times(1)).update(username, userDTO);
     }
 
     @Test
-    public void shouldThrowExceptionWhenUpdatingUser() throws Exception {
+    void updateUserNotFound() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
         UserDTO userDTO = new UserDTO();
-        userDTO.setUsername("updatedUser");
+        when(userService.update(username, userDTO)).thenThrow(new UserNotFoundException("User not found"));
 
-        when(userService.update(eq("oldUsername"), any(UserDTO.class))).thenThrow(new UserNotFoundException("User not found"));
+        // Act
+        ResponseEntity<User> response = userController.update(username, userDTO);
 
-        mockMvc.perform(put("/api/user/update/oldUsername")
-                        .contentType(APPLICATION_JSON)
-                        .content("{\"username\": \"updatedUser\"}"))
-                .andExpect(status().isBadRequest())
-                .andDo(print());
-
-        verify(userService).update(eq("oldUsername"), any(UserDTO.class));
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        verify(userService, times(1)).update(username, userDTO);
     }
 
     @Test
-    public void shouldDeleteUserSuccessfully() throws Exception {
-        mockMvc.perform(delete("/api/user/delete/userToDelete"))
-                .andExpect(status().isOk())
-                .andDo(print());
+    void deleteSuccess() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
+        doNothing().when(userService).delete(username);
 
-        verify(userService).delete("userToDelete");
+        // Act
+        ResponseEntity<Void> response = userController.delete(username);
+
+        // Assert
+        assertEquals(204, response.getStatusCodeValue());
+        verify(userService, times(1)).delete(username);
     }
 
     @Test
-    public void shouldThrowExceptionWhenDeletingUser() throws Exception {
-        doThrow(new UserNotFoundException("User not found")).when(userService).delete("userToDelete");
+    void deleteUserNotFound() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
+        doThrow(new UserNotFoundException("User not found")).when(userService).delete(username);
 
-        mockMvc.perform(delete("/api/user/delete/userToDelete"))
-                .andExpect(status().isBadRequest())
-                .andDo(print());
+        // Act
+        ResponseEntity<Void> response = userController.delete(username);
 
-        verify(userService).delete("userToDelete");
+        // Assert
+        assertEquals(404, response.getStatusCodeValue());
+        verify(userService, times(1)).delete(username);
+    }
+
+    @Test
+    void saveSpotifyTokensSuccess() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+        int expiresIn = 3600;
+
+        doNothing().when(userService).saveTokens(username, accessToken, refreshToken, expiresIn);
+
+        // Act
+        ResponseEntity<String> response = userController.saveSpotifyTokens(username, accessToken, refreshToken, expiresIn);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals("Spotify tokens saved successfully for testUser", response.getBody());
+        verify(userService, times(1)).saveTokens(username, accessToken, refreshToken, expiresIn);
+    }
+
+    @Test
+    void saveSpotifyTokensUserNotFound() throws UserNotFoundException {
+        // Arrange
+        String username = "testUser";
+        String accessToken = "accessToken";
+        String refreshToken = "refreshToken";
+        int expiresIn = 3600;
+
+        doThrow(new UserNotFoundException("User not found")).when(userService).saveTokens(username, accessToken, refreshToken, expiresIn);
+
+        // Act
+        try {
+            userController.saveSpotifyTokens(username, accessToken, refreshToken, expiresIn);
+        } catch (UserNotFoundException e) {
+            // Assert
+            assertEquals("User not found", e.getMessage());
+        }
+
+        verify(userService, times(1)).saveTokens(username, accessToken, refreshToken, expiresIn);
+    }
+
+    @SneakyThrows
+    @Test
+    void getSpotifyAccessTokenSuccess() {
+        // Arrange
+        String username = "testUser";
+        String accessToken = "accessToken";
+        when(userService.getAccessToken(username)).thenReturn(accessToken);
+
+        // Act
+        ResponseEntity<String> response = userController.getSpotifyAccessToken(username);
+
+        // Assert
+        assertEquals(200, response.getStatusCodeValue());
+        assertEquals(accessToken, response.getBody());
+        verify(userService, times(1)).getAccessToken(username);
+    }
+
+    @SneakyThrows
+    @Test
+    void getSpotifyAccessTokenFailure() {
+        // Arrange
+        String username = "testUser";
+        when(userService.getAccessToken(username)).thenThrow(new RuntimeException("Token retrieval failed"));
+
+        // Act
+        ResponseEntity<String> response = userController.getSpotifyAccessToken(username);
+
+        // Assert
+        assertEquals(500, response.getStatusCodeValue());
+        assertEquals("Failed to retrieve access token: Token retrieval failed", response.getBody());
+        verify(userService, times(1)).getAccessToken(username);
     }
 }
